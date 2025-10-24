@@ -1,6 +1,11 @@
 import { jwtDecode } from "jwt-decode";
 import { MiddlewareConfig, NextRequest, NextResponse } from "next/server";
-import { TokenDecoded } from "./types/token.type";
+
+interface TokenDecoded {
+  exp: number;
+  iat: number;
+  sub: string;
+}
 
 const publicRoutes = [
   { path: "/", whenAuthenticated: "next" },
