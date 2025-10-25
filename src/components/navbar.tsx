@@ -1,6 +1,6 @@
 import { SiWolframlanguage } from "react-icons/si";
-import { HiOutlineShoppingCart } from "react-icons/hi2";
 import { FiSearch } from "react-icons/fi";
+import { CartSheet } from "./cart-sheet";
 
 export const Navbar = () => {
   return (
@@ -23,9 +23,7 @@ export const Navbar = () => {
         </div>
       </div>
       <div className="flex-1 flex justify-end">
-        <a href="#" className="bg-black p-3 rounded-lg flex items-center justify-center border border-zinc-700 hover:transform hover:scale-105 transition-transform">
-          <HiOutlineShoppingCart size={18} color="white" />
-        </a>
+        <CartSheet />
       </div>
     </nav>
   );
