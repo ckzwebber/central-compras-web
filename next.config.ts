@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "encrypted-tbn*.gstatic.com",
+        hostname: "demo.vercel.store",
       },
     ],
   },

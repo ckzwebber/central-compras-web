@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+html,
+body {
+  @apply bg-zinc-950 text-white;
+}
