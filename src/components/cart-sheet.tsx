@@ -2,47 +2,26 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import { useState, useImperativeHandle, forwardRef } from "react";
+import useCart from "@/hooks/states/use-cart";
 
-export function CartSheet() {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: "1",
-      nome: "Product 1",
-      descricao: "Detailed description of Product 1",
-      valor_unitario: 10.0,
-      imagem_url: "https://demo.vercel.store/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0754%2F3727%2F7491%2Ffiles%2Ft-shirt-1.png%3Fv%3D1689798965&w=2048&q=75",
-      quantidade_estoque: 100,
-      categoria: "Category 1",
-      criado_em: new Date("2024-01-08T10:00:00Z"),
-      atualizado_em: new Date("2024-06-12T12:00:00Z"),
-      quantidade: 2,
-    },
-    {
-      id: "2",
-      nome: "Product 2",
-      descricao: "Detailed description of Product 2",
-      valor_unitario: 20.0,
-      imagem_url: "https://demo.vercel.store/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0754%2F3727%2F7491%2Ffiles%2Fbag-1-dark.png%3Fv%3D1689796304&w=2048&q=75",
-      quantidade_estoque: 200,
-      categoria: "Category 2",
-      criado_em: new Date("2024-02-18T10:00:00Z"),
-      atualizado_em: new Date("2024-07-21T12:00:00Z"),
-      quantidade: 1,
-    },
-    {
-      id: "3",
-      nome: "Product 3",
-      descricao: "Detailed description of Product 3",
-      valor_unitario: 15.5,
-      imagem_url: "https://demo.vercel.store/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0754%2F3727%2F7491%2Ffiles%2Fhoodie-1.png%3Fv%3D1690003482&w=2048&q=75",
-      quantidade_estoque: 80,
-      categoria: "Category 1",
-      criado_em: new Date("2024-03-10T10:00:00Z"),
-      atualizado_em: new Date("2024-09-05T12:00:00Z"),
-      quantidade: 3,
-    },
-  ]);
+export const CartSheet = forwardRef((_, ref) => {
+  const [open, setOpen] = useState(false);
+  const { cart, setCart, updateCart, clearCart } = useCart();
+  const cartItems = cart?.produtos || [];
+
+  const setCartItems = (itemsOrUpdater: any[] | ((items: any[]) => any[])) => {
+    const currentItems = cart?.produtos || [];
+    const newItems = typeof itemsOrUpdater === "function" ? (itemsOrUpdater as (items: any[]) => any[])(currentItems) : itemsOrUpdater;
+    const total = newItems.reduce((sum, item) => sum + item.valor_unitario * item.quantidade, 0);
+    setCart({ ...(cart || { produtos: [], total: 0 }), produtos: newItems, total });
+  };
+
+  useImperativeHandle(ref, () => ({
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+    toggle: () => setOpen((o) => !o),
+  }));
 
   const total = cartItems.reduce((sum, item) => sum + item.valor_unitario * item.quantidade, 0);
 
@@ -55,7 +34,7 @@ export function CartSheet() {
   };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="default" size="icon" className="relative bg-black border-zinc-800 border hover:transform hover:scale-105 transition-transform ">
           <ShoppingCart className="h-6 w-6" />
@@ -113,4 +92,4 @@ export function CartSheet() {
       </SheetContent>
     </Sheet>
   );
-}
+});

@@ -9,6 +9,7 @@ interface TokenDecoded {
 
 const publicRoutes = [
   { path: "/", whenAuthenticated: "next" },
+  { path: "/checkout", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
   { path: "/login", whenAuthenticated: "redirect" },
   { path: "/register", whenAuthenticated: "redirect" },
 ] as const;

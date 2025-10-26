@@ -6,13 +6,13 @@ export const Navbar = () => {
   return (
     <nav className="w-full bg-zinc-950 pt-3 pb-3 pr-6 pl-6 text-white flex items-center hover:shadow-lg shadow-black/20 justify-between transition-all duration-300">
       <div className="flex items-center space-x-7 flex-1">
-        <a href="#" className="bg-black p-2 rounded-lg flex items-center justify-center border border-zinc-800 hover:transform hover:scale-105 transition-transform">
+        <a href="/" className="bg-black p-2 rounded-lg flex items-center justify-center border border-zinc-800 hover:transform hover:scale-105 transition-transform">
           <SiWolframlanguage size={26} color="white" />
         </a>
-        <a href="#" className="hover:underline font-bold text-sm">
+        <a href="/" className="hover:underline font-bold text-sm">
           GURI'S STORE
         </a>
-        <a href="#" className="hover:underline font-bold text-sm text-zinc-400 hover:text-white">
+        <a href="/" className="hover:underline font-bold text-sm text-zinc-400 hover:text-white">
           All Products
         </a>
       </div>
