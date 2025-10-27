@@ -80,8 +80,13 @@ export const CartSheet = forwardRef((_, ref) => {
             <span>Total:</span>
             <span>${total.toFixed(2)}</span>
           </div>
-          <Button className="w-full" disabled={cartItems.length === 0}>
-            Checkout
+          <Button
+            className="w-full"
+            disabled={cartItems.length === 0}
+            onClick={() => {
+              window.location.href = "/checkout";
+            }}>
+            Proceed to Checkout
           </Button>
           <SheetClose asChild>
             <Button variant="secondary" className="w-full">
