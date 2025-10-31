@@ -12,6 +12,7 @@ const publicRoutes = [
   { path: "/checkout", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
   { path: "/login", whenAuthenticated: "redirect" },
   { path: "/register", whenAuthenticated: "redirect" },
+  { path: "/account", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
 ] as const;
 
 const REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE = "/login";
