@@ -13,13 +13,16 @@ const publicRoutes = [
   { path: "/login", whenAuthenticated: "redirect" },
   { path: "/register", whenAuthenticated: "redirect" },
   { path: "/account", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
+  { path: "/checkout/shipping", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
+  { path: "/checkout/payment", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
+  { path: /^\/product\/[^/]+$/, whenAuthenticated: "next" }, // <-- rota dinâmica ajustada
 ] as const;
 
 const REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE = "/login";
 
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const publicRoute = publicRoutes.find((route) => route.path === path);
+  const publicRoute = publicRoutes.find((route) => (typeof route.path === "string" ? route.path === path : route.path.test(path)));
   const authToken = request.cookies.get("token");
 
   if (!authToken && publicRoute) {
