@@ -12,62 +12,61 @@ const publicRoutes = [
   { path: "/checkout", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
   { path: "/login", whenAuthenticated: "redirect" },
   { path: "/register", whenAuthenticated: "redirect" },
-  { path: "/account", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
-  { path: "/checkout/shipping", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
-  { path: "/checkout/payment", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
   { path: /^\/product\/[^/]+$/, whenAuthenticated: "next" }, // <-- rota dinâmica ajustada
 ] as const;
 
 const REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE = "/login";
 
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-  const publicRoute = publicRoutes.find((route) => (typeof route.path === "string" ? route.path === path : route.path.test(path)));
-  const authToken = request.cookies.get("token");
+  return NextResponse.next(); // ONLY FOR TESTING
 
-  if (!authToken && publicRoute) {
-    return NextResponse.next();
-  }
+  // const path = request.nextUrl.pathname;
+  // const publicRoute = publicRoutes.find((route) => (typeof route.path === "string" ? route.path === path : route.path.test(path)));
+  // const authToken = request.cookies.get("token");
 
-  if (!authToken && !publicRoute) {
-    const redirectUrl = request.nextUrl.clone();
+  // if (!authToken && publicRoute) {
+  //   return NextResponse.next();
+  // }
 
-    redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
+  // if (!authToken && !publicRoute) {
+  //   const redirectUrl = request.nextUrl.clone();
 
-    return NextResponse.redirect(redirectUrl);
-  }
+  //   redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
 
-  if (authToken && publicRoute && publicRoute.whenAuthenticated === "redirect") {
-    const redirectUrl = request.nextUrl.clone();
+  //   return NextResponse.redirect(redirectUrl);
+  // }
 
-    redirectUrl.pathname = "/";
+  // if (authToken && publicRoute && publicRoute.whenAuthenticated === "redirect") {
+  //   const redirectUrl = request.nextUrl.clone();
 
-    return NextResponse.redirect(redirectUrl);
-  }
+  //   redirectUrl.pathname = "/";
 
-  if (authToken && !publicRoute) {
-    const tokenString = authToken.value;
+  //   return NextResponse.redirect(redirectUrl);
+  // }
 
-    if (!tokenString) {
-      return NextResponse.next();
-    }
+  // if (authToken && !publicRoute) {
+  //   const tokenString = authToken.value;
 
-    const tokenDecoded: TokenDecoded = jwtDecode(tokenString);
+  //   if (!tokenString) {
+  //     return NextResponse.next();
+  //   }
 
-    if (tokenDecoded.exp * 1000 < Date.now()) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
+  //   const tokenDecoded: TokenDecoded = jwtDecode(tokenString);
 
-      const response = NextResponse.redirect(redirectUrl);
-      response.cookies.delete("token");
+  //   if (tokenDecoded.exp * 1000 < Date.now()) {
+  //     const redirectUrl = request.nextUrl.clone();
+  //     redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
 
-      return response;
-    }
+  //     const response = NextResponse.redirect(redirectUrl);
+  //     response.cookies.delete("token");
 
-    return NextResponse.next();
-  }
+  //     return response;
+  //   }
 
-  return NextResponse.next();
+  //   return NextResponse.next();
+  // }
+
+  // return NextResponse.next();
 }
 
 export const config: MiddlewareConfig = {

@@ -25,6 +25,13 @@ export const CartSheet = forwardRef((_, ref) => {
 
   const total = cartItems.reduce((sum, item) => sum + item.valor_unitario * item.quantidade, 0);
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
   const increaseQuantity = (id: string) => {
     setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantidade: item.quantidade + 1 } : item)));
   };
@@ -59,7 +66,7 @@ export const CartSheet = forwardRef((_, ref) => {
                   <div className="flex-1">
                     <h3 className="font-semibold text-white">{item.nome}</h3>
                     <p className="text-sm text-zinc-400">Quantity: {item.quantidade}</p>
-                    <p className="font-semibold text-white">${item.valor_unitario.toFixed(2)}</p>
+                    <p className="font-semibold text-white">{formatCurrency(item.valor_unitario)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="default" size="icon" className="h-8 w-8" onClick={() => decreaseQuantity(item.id)}>
@@ -78,7 +85,7 @@ export const CartSheet = forwardRef((_, ref) => {
         <SheetFooter className="flex-col gap-4">
           <div className="flex justify-between text-lg font-semibold text-white">
             <span>Total:</span>
-            <span>${total.toFixed(2)}</span>
+            <span>{formatCurrency(total)}</span>
           </div>
           <Button
             className="w-full"
