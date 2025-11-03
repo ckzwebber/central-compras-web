@@ -81,12 +81,12 @@ export default function ForgotPasswordPage() {
                   </Alert>
 
                   <div className="text-center">
-                    <Link href="/login">
-                      <Button variant="outline" className="gap-2 border-zinc-800 bg-zinc-900 hover:bg-zinc-800">
+                    <Button asChild variant="link" className="gap-2 text-white">
+                      <Link href="/login">
                         <ArrowLeft className="h-4 w-4" />
                         Back to login
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -131,10 +131,12 @@ export default function ForgotPasswordPage() {
 
                   {/* Back to Login */}
                   <div className="text-center">
-                    <Link href="/login" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-400 transition hover:text-white">
-                      <ArrowLeft className="h-4 w-4" />
-                      Back to login
-                    </Link>
+                    <Button asChild variant="link" className="gap-2 text-white">
+                      <Link href="/login">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to login
+                      </Link>
+                    </Button>
                   </div>
                 </form>
               )}

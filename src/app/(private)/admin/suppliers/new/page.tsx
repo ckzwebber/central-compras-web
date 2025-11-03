@@ -214,12 +214,8 @@ export default function NewSupplierPage() {
             </div>
           </div>
 
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button variant="default" onClick={handleSendEmail} className="w-full border-zinc-800 sm:w-auto">
-              <Mail className="mr-2 h-4 w-4" />
-              Send via Email
-            </Button>
-            <Button onClick={handleCloseDialog} className="w-full sm:w-auto">
+          <DialogFooter>
+            <Button onClick={handleCloseDialog} className="w-full">
               Done
             </Button>
           </DialogFooter>

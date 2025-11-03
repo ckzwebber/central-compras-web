@@ -66,12 +66,12 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                   <RefreshCw className="h-4 w-4" />
                   Try Again
                 </Button>
-                <Link href="/" className="flex-1">
-                  <Button variant="outline" className="w-full gap-2 border-zinc-800 bg-zinc-900 hover:bg-zinc-800">
+                <Button asChild variant="link" className="flex-1 gap-2">
+                  <Link href="/">
                     <Home className="h-4 w-4" />
                     Back to Home
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
 
               <Separator className="bg-zinc-800" />

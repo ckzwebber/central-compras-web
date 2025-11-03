@@ -127,12 +127,12 @@ export default function ErrorPage() {
                     Try Again
                   </Button>
                 )}
-                <Link href="/" className={statusCode !== "404" ? "flex-1" : "w-full"}>
-                  <Button className={`gap-2 ${statusCode === "404" ? "w-full" : "w-full sm:w-auto"}`} variant={statusCode === "404" ? "default" : "outline"}>
+                <Button asChild variant="link" className={`gap-2 ${statusCode !== "404" ? "flex-1" : "w-full"}`}>
+                  <Link href="/">
                     <Home className="h-4 w-4" />
                     Back to Home
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
 
               {statusCode !== "404" && (

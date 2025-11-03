@@ -121,12 +121,12 @@ export default function ContactPage() {
 
               {/* Back to Login */}
               <div className="text-center">
-                <Link href="/login">
-                  <Button variant="default" className="gap-2 border-zinc-800 bg-zinc-900 hover:bg-zinc-800">
+                <Button asChild variant="link" className="gap-2 text-white">
+                  <Link href="/login">
                     <ArrowLeft className="h-4 w-4" />
                     Back to login
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

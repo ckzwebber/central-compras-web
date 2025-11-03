@@ -180,12 +180,12 @@ export default function TermsPage() {
 
               {/* Back Button */}
               <div className="flex justify-center pt-4">
-                <Link href="/">
-                  <Button variant="default" className="gap-2 border-zinc-800 bg-zinc-900 hover:bg-zinc-800">
+                <Button asChild variant="link" className="gap-2 text-white">
+                  <Link href="/">
                     <ArrowLeft className="h-4 w-4" />
                     Back to Home
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
