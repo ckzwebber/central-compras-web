@@ -1,8 +1,22 @@
+"use client";
+
 import { SiWolframlanguage } from "react-icons/si";
 import { FiSearch } from "react-icons/fi";
 import { CartSheet } from "./cart-sheet";
+import { useRef, useEffect } from "react";
+import useCart from "@/hooks/states/use-cart";
 
 export const Navbar = () => {
+  const cartRef = useRef<{ open: () => void }>(null);
+  const { cart } = useCart();
+
+  // Expose the cart ref globally so it can be opened from anywhere
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).openCart = () => cartRef.current?.open();
+    }
+  }, []);
+
   return (
     <nav className="w-full bg-zinc-950 pt-3 pb-3 pr-6 pl-6 text-white flex items-center hover:shadow-lg shadow-black/20 justify-between transition-all duration-300">
       <div className="flex items-center space-x-7 flex-1">
@@ -23,7 +37,7 @@ export const Navbar = () => {
         </div>
       </div>
       <div className="flex-1 flex justify-end">
-        <CartSheet />
+        <CartSheet ref={cartRef} />
       </div>
     </nav>
   );

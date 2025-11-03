@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Minus, Plus } from "lucide-react";
@@ -9,7 +9,6 @@ import { LiaCartPlusSolid } from "react-icons/lia";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CartSheet } from "@/components/cart-sheet";
 import useCart from "@/hooks/states/use-cart";
 import { Produto } from "@/types/produto";
 
@@ -27,7 +26,6 @@ const MOCK_PRODUCT: Produto = {
 
 export default function ProductPage() {
   const { cart, updateCart } = useCart();
-  const cartRef = useRef<{ open: () => void }>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
@@ -62,7 +60,11 @@ export default function ProductPage() {
         });
       }
 
-      cartRef.current?.open();
+      // Open the global cart from navbar
+      if (typeof window !== "undefined" && (window as any).openCart) {
+        (window as any).openCart();
+      }
+
       setQuantity(1);
     }
   };
@@ -165,10 +167,6 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="hidden">
-        <CartSheet ref={cartRef} />
       </div>
     </main>
   );

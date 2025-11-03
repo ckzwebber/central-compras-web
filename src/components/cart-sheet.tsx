@@ -32,11 +32,19 @@ export const CartSheet = forwardRef((_, ref) => {
     }).format(value);
   };
 
-  const increaseQuantity = (id: string) => {
+  const increaseQuantity = (id: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantidade: item.quantidade + 1 } : item)));
   };
 
-  const decreaseQuantity = (id: string) => {
+  const decreaseQuantity = (id: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setCartItems((items) => items.filter((item) => item.id !== id || item.quantidade > 1).map((item) => (item.id === id ? { ...item, quantidade: item.quantidade - 1 } : item)));
   };
 
@@ -69,11 +77,11 @@ export const CartSheet = forwardRef((_, ref) => {
                     <p className="font-semibold text-white">{formatCurrency(item.valor_unitario)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="default" size="icon" className="h-8 w-8" onClick={() => decreaseQuantity(item.id)}>
+                    <Button variant="default" size="icon" className="h-8 w-8" onClick={(e) => decreaseQuantity(item.id, e)}>
                       -
                     </Button>
                     <span className="text-white">{item.quantidade}</span>
-                    <Button variant="default" size="icon" className="h-8 w-8" onClick={() => increaseQuantity(item.id)}>
+                    <Button variant="default" size="icon" className="h-8 w-8" onClick={(e) => increaseQuantity(item.id, e)}>
                       +
                     </Button>
                   </div>
@@ -90,13 +98,20 @@ export const CartSheet = forwardRef((_, ref) => {
           <Button
             className="w-full"
             disabled={cartItems.length === 0}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               window.location.href = "/checkout";
             }}>
             Proceed to Checkout
           </Button>
           <SheetClose asChild>
-            <Button variant="secondary" className="w-full">
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}>
               Continue Shopping
             </Button>
           </SheetClose>
@@ -105,3 +120,5 @@ export const CartSheet = forwardRef((_, ref) => {
     </Sheet>
   );
 });
+
+CartSheet.displayName = "CartSheet";

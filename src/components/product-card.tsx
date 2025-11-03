@@ -1,12 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
 import { Produto } from "@/types/produto";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
 import { LiaCartPlusSolid } from "react-icons/lia";
 import useCart from "@/hooks/states/use-cart";
-import { CartSheet } from "./cart-sheet";
 
 type ProductCardProps = {
   produto: Produto;
@@ -14,7 +14,6 @@ type ProductCardProps = {
 
 export const ProductCard = ({ produto }: ProductCardProps) => {
   const { cart, updateCart } = useCart();
-  const cartRef = useRef<{ open: () => void }>(null);
 
   const addToCart = (produto: Produto) => {
     if (produto) {
@@ -23,17 +22,18 @@ export const ProductCard = ({ produto }: ProductCardProps) => {
           produtos: cart.produtos.map((item) => (item.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item)),
           total: cart.total + produto.valor_unitario,
         });
-        cartRef.current?.open();
-        return;
+      } else {
+        updateCart({
+          produtos: cart?.produtos ? [...cart.produtos, { ...produto, quantidade: 1 }] : [{ ...produto, quantidade: 1 }],
+          total: cart?.total ? cart.total + produto.valor_unitario : produto.valor_unitario,
+        });
       }
 
-      updateCart({
-        produtos: cart?.produtos ? [...cart.produtos, { ...produto, quantidade: 1 }] : [{ ...produto, quantidade: 1 }],
-        total: cart?.total ? cart.total + produto.valor_unitario : produto.valor_unitario,
-      });
+      // Open the global cart from navbar
+      if (typeof window !== "undefined" && (window as any).openCart) {
+        (window as any).openCart();
+      }
     }
-
-    cartRef.current?.open();
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -66,9 +66,6 @@ export const ProductCard = ({ produto }: ProductCardProps) => {
           </Button>
         </CardFooter>
       </Card>
-      <div className="hidden">
-        <CartSheet ref={cartRef} />
-      </div>
     </Link>
   );
 };

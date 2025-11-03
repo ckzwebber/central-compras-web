@@ -18,7 +18,7 @@ const useCart = create<CartState>()(
       clearCart: () => set({ cart: null }),
       updateCart: (updates: Partial<Carrinho>) =>
         set((state) => ({
-          cart: state.cart ? { ...state.cart, ...updates } : null,
+          cart: state.cart ? { ...state.cart, ...updates } : ({ produtos: [], total: 0, ...updates } as Carrinho),
         })),
       isEmpty: () => {
         const cart = get().cart;
