@@ -1,9 +1,10 @@
 "use client";
 
-import { LayoutDashboard, ShoppingBag, ShoppingCart, Package, User } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, ShoppingCart, Package, User, Home } from "lucide-react";
 import { DashboardSidebar, NavigationItem } from "@/components/dashboard-sidebar";
 
 const navigation: NavigationItem[] = [
+  { name: "Home", href: "/", icon: Home },
   { name: "Dashboard", href: "/store", icon: LayoutDashboard },
   { name: "Products", href: "/store/products", icon: ShoppingBag },
   { name: "My Cart", href: "/store/cart", icon: ShoppingCart },

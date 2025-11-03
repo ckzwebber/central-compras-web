@@ -169,25 +169,28 @@ export default function SupplierOrdersPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant={filterStatus === "all" ? "default" : "outline"} onClick={() => setFilterStatus("all")} className={filterStatus !== "all" ? "border-zinc-800 text-zinc-950 hover:text-zinc-500" : ""}>
+            <Button
+              variant={filterStatus === "all" ? "default" : "outline"}
+              onClick={() => setFilterStatus("all")}
+              className={filterStatus !== "all" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               All
             </Button>
             <Button
               variant={filterStatus === "pending" ? "default" : "outline"}
               onClick={() => setFilterStatus("pending")}
-              className={filterStatus !== "pending" ? "border-zinc-800 text-zinc-950 hover:text-zinc-500" : ""}>
+              className={filterStatus !== "pending" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Pending
             </Button>
             <Button
               variant={filterStatus === "processing" ? "default" : "outline"}
               onClick={() => setFilterStatus("processing")}
-              className={filterStatus !== "processing" ? "border-zinc-800 text-zinc-950 hover:text-zinc-500" : ""}>
+              className={filterStatus !== "processing" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Processing
             </Button>
             <Button
               variant={filterStatus === "shipped" ? "default" : "outline"}
               onClick={() => setFilterStatus("shipped")}
-              className={filterStatus !== "shipped" ? "border-zinc-800 text-zinc-950 hover:text-zinc-500" : ""}>
+              className={filterStatus !== "shipped" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Shipped
             </Button>
           </div>

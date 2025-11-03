@@ -148,16 +148,28 @@ export default function UsersPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant={filterType === "all" ? "default" : "outline"} onClick={() => setFilterType("all")} className={filterType !== "all" ? "border-zinc-800 text-zinc-500 hover:text-zinc-950" : ""}>
+            <Button
+              variant={filterType === "all" ? "default" : "outline"}
+              onClick={() => setFilterType("all")}
+              className={filterType !== "all" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               All
             </Button>
-            <Button variant={filterType === "admin" ? "default" : "outline"} onClick={() => setFilterType("admin")} className={filterType !== "admin" ? "border-zinc-800 text-zinc-500 hover:text-zinc-950" : ""}>
+            <Button
+              variant={filterType === "admin" ? "default" : "outline"}
+              onClick={() => setFilterType("admin")}
+              className={filterType !== "admin" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Admins
             </Button>
-            <Button variant={filterType === "store" ? "default" : "outline"} onClick={() => setFilterType("store")} className={filterType !== "store" ? "border-zinc-800 text-zinc-500 hover:text-zinc-950" : ""}>
+            <Button
+              variant={filterType === "store" ? "default" : "outline"}
+              onClick={() => setFilterType("store")}
+              className={filterType !== "store" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Stores
             </Button>
-            <Button variant={filterType === "supplier" ? "default" : "outline"} onClick={() => setFilterType("supplier")} className={filterType !== "supplier" ? "border-zinc-800 text-zinc-500 hover:text-zinc-950" : ""}>
+            <Button
+              variant={filterType === "supplier" ? "default" : "outline"}
+              onClick={() => setFilterType("supplier")}
+              className={filterType !== "supplier" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Suppliers
             </Button>
           </div>
@@ -195,21 +207,23 @@ export default function UsersPage() {
 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="default" size="icon" className="h-8 w-8 text-zinc-400 hover:text-white">
+                          <Button variant="default" size="icon" className="h-8 w-8 text-zinc-400">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                          <DropdownMenuItem onClick={() => handleEdit(user.id)} className="text-zinc-300 hover:text-white">
+                          <DropdownMenuItem onClick={() => handleEdit(user.id)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleResetPassword(user.id, user.email)} className="text-zinc-300 hover:text-white">
+                          <DropdownMenuItem onClick={() => handleResetPassword(user.id, user.email)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
                             <Key className="mr-2 h-4 w-4" />
                             Reset Password
                           </DropdownMenuItem>
                           <DropdownMenuSeparator className="bg-zinc-800" />
-                          <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)} className={user.status === "active" ? "text-red-400 hover:text-red-300" : "text-green-400 hover:text-green-300"}>
+                          <DropdownMenuItem
+                            onClick={() => handleToggleStatus(user.id, user.status)}
+                            className={user.status === "active" ? "text-red-400 focus:bg-zinc-900 focus:text-red-400" : "text-green-400 focus:bg-zinc-900 focus:text-green-400"}>
                             <Power className="mr-2 h-4 w-4" />
                             {user.status === "active" ? "Deactivate" : "Activate"}
                           </DropdownMenuItem>

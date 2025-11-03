@@ -2,9 +2,12 @@
 
 import { SiWolframlanguage } from "react-icons/si";
 import { FiSearch } from "react-icons/fi";
+import { LayoutDashboard, LogIn } from "lucide-react";
 import { CartSheet } from "./cart-sheet";
+import { Button } from "./ui/button";
 import { useRef, useEffect } from "react";
 import useCart from "@/hooks/states/use-cart";
+import Link from "next/link";
 
 export const Navbar = () => {
   const cartRef = useRef<{ open: () => void }>(null);
@@ -36,7 +39,31 @@ export const Navbar = () => {
           <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400" size={16} />
         </div>
       </div>
-      <div className="flex-1 flex justify-end">
+      <div className="flex-1 flex justify-end items-center gap-2">
+        <Link href="/admin">
+          <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
+            <LayoutDashboard className="h-3 w-3 mr-1" />
+            Admin
+          </Button>
+        </Link>
+        <Link href="/supplier">
+          <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
+            <LayoutDashboard className="h-3 w-3 mr-1" />
+            Supplier
+          </Button>
+        </Link>
+        <Link href="/store">
+          <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
+            <LayoutDashboard className="h-3 w-3 mr-1" />
+            Store
+          </Button>
+        </Link>
+        <Link href="/login">
+          <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
+            <LogIn className="h-3 w-3 mr-1" />
+            Login
+          </Button>
+        </Link>
         <CartSheet ref={cartRef} />
       </div>
     </nav>

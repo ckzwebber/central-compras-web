@@ -108,12 +108,12 @@ export default function SuppliersPage() {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-zinc-400">
+                        <Button variant="default" size="icon" className="text-zinc-400">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                        <DropdownMenuItem className="text-zinc-300 focus:bg-zinc-900 focus:text-white">
+                        <DropdownMenuItem className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>

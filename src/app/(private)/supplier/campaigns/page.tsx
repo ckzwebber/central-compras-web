@@ -130,16 +130,22 @@ export default function SupplierCampaignsPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant={filterStatus === "all" ? "default" : "outline"} onClick={() => setFilterStatus("all")} className={filterStatus !== "all" ? "border-zinc-800 text-zinc-950 hover:text-zinc-500" : ""}>
+            <Button
+              variant={filterStatus === "all" ? "default" : "outline"}
+              onClick={() => setFilterStatus("all")}
+              className={filterStatus !== "all" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               All
             </Button>
-            <Button variant={filterStatus === "active" ? "default" : "outline"} onClick={() => setFilterStatus("active")} className={filterStatus !== "active" ? "border-zinc-800 text-zinc-950 hover:text-zinc-500" : ""}>
+            <Button
+              variant={filterStatus === "active" ? "default" : "outline"}
+              onClick={() => setFilterStatus("active")}
+              className={filterStatus !== "active" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Active
             </Button>
             <Button
               variant={filterStatus === "inactive" ? "default" : "outline"}
               onClick={() => setFilterStatus("inactive")}
-              className={filterStatus !== "inactive" ? "border-zinc-800 text-zinc-950 hover:text-zinc-500" : ""}>
+              className={filterStatus !== "inactive" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Inactive
             </Button>
           </div>
@@ -172,23 +178,23 @@ export default function SupplierCampaignsPage() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="default" size="icon" className="h-8 w-8 text-zinc-400 hover:text-white">
+                        <Button variant="default" size="icon" className="h-8 w-8 text-zinc-400">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                        <DropdownMenuItem onClick={() => handleEdit(campaign.id)} className="text-zinc-300 hover:text-white">
+                        <DropdownMenuItem onClick={() => handleEdit(campaign.id)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleToggleStatus(campaign.id, campaign.status)}
-                          className={campaign.status === "active" ? "text-yellow-400 hover:text-yellow-300" : "text-green-400 hover:text-green-300"}>
+                          className={campaign.status === "active" ? "text-yellow-400 focus:bg-zinc-900 focus:text-yellow-400" : "text-green-400 focus:bg-zinc-900 focus:text-green-400"}>
                           <Power className="mr-2 h-4 w-4" />
                           {campaign.status === "active" ? "Deactivate" : "Activate"}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-zinc-800" />
-                        <DropdownMenuItem onClick={() => handleDelete(campaign.id)} className="text-red-400 hover:text-red-300">
+                        <DropdownMenuItem onClick={() => handleDelete(campaign.id)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>

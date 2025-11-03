@@ -168,16 +168,16 @@ export default function ProductsPage() {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400">
+                          <Button variant="default" size="icon" className="h-8 w-8 text-zinc-400">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                          <DropdownMenuItem onClick={() => handleEdit(product.id)} className="text-zinc-300 hover:text-white">
+                          <DropdownMenuItem onClick={() => handleEdit(product.id)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(product.id)} className="text-red-400 hover:text-red-300">
+                          <DropdownMenuItem onClick={() => handleDelete(product.id)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
