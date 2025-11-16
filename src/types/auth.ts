@@ -1,6 +1,12 @@
 export type UserRole = "admin" | "supplier" | "store";
 export type UserStatus = "active" | "inactive";
 
+export interface DefaultResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
 export interface User {
   id: string;
   nome: string;
@@ -13,13 +19,14 @@ export interface User {
 
 export interface LoginRequest {
   email: string;
-  password: string;
+  senha: string;
 }
 
-export interface LoginResponse {
-  token: string;
-  user: User;
-}
+export interface LoginResponse
+  extends DefaultResponse<{
+    token: string;
+    user: User;
+  }> {}
 
 export interface ForgotPasswordRequest {
   email: string;

@@ -1,49 +1,31 @@
-import type { LoginRequest, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse, User } from "@/types/auth";
-
-// TODO: Substituir pela URL real do backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import type {
+  LoginRequest,
+  LoginResponse,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  User,
+} from "@/types/auth";
+import { api } from "@/config/axios.config";
 
 class AuthService {
   private tokenKey = "auth_token";
   private userKey = "user_data";
 
-  /**
-   * Login do usuário
-   */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      // TODO: Substituir por chamada real ao backend
-      // const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(credentials),
-      // });
+      const response = await api.post<LoginResponse>(
+        "/usuarios/login",
+        credentials,
+      );
 
-      // if (!response.ok) {
-      //   throw new Error("Invalid credentials");
-      // }
+      if (!response.status || response.status !== 200) {
+        throw new Error("Invalid credentials");
+      }
 
-      // const data: LoginResponse = await response.json();
+      const data: LoginResponse = response.data;
 
-      // Mock temporário
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const mockUser: User = {
-        id: "1",
-        nome: "Test User",
-        email: credentials.email,
-        role: credentials.email.includes("admin") ? "admin" : credentials.email.includes("supplier") ? "supplier" : "store",
-        status: "active",
-      };
-
-      const data: LoginResponse = {
-        token: "mock-jwt-token-" + Date.now(),
-        user: mockUser,
-      };
-
-      // Armazenar token e dados do usuário
       this.setToken(data.token);
       this.setUser(data.user);
 
@@ -54,10 +36,9 @@ class AuthService {
     }
   }
 
-  /**
-   * Recuperação de senha
-   */
-  async forgotPassword(request: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+  async forgotPassword(
+    request: ForgotPasswordRequest,
+  ): Promise<ForgotPasswordResponse> {
     try {
       // TODO: Substituir por chamada real ao backend
       // const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
@@ -89,10 +70,9 @@ class AuthService {
     }
   }
 
-  /**
-   * Reset de senha
-   */
-  async resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+  async resetPassword(
+    request: ResetPasswordRequest,
+  ): Promise<ResetPasswordResponse> {
     try {
       // TODO: Substituir por chamada real ao backend
       // const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
@@ -124,73 +104,46 @@ class AuthService {
     }
   }
 
-  /**
-   * Logout do usuário
-   */
   logout(): void {
     this.removeToken();
     this.removeUser();
   }
 
-  /**
-   * Verifica se usuário está autenticado
-   */
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
-  /**
-   * Obtém o token armazenado
-   */
   getToken(): string | null {
     if (typeof window === "undefined") return null;
     return localStorage.getItem(this.tokenKey);
   }
 
-  /**
-   * Armazena o token
-   */
   setToken(token: string): void {
     if (typeof window === "undefined") return;
     localStorage.setItem(this.tokenKey, token);
   }
 
-  /**
-   * Remove o token
-   */
   removeToken(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(this.tokenKey);
   }
 
-  /**
-   * Obtém os dados do usuário armazenados
-   */
   getUser(): User | null {
     if (typeof window === "undefined") return null;
     const userData = localStorage.getItem(this.userKey);
     return userData ? JSON.parse(userData) : null;
   }
 
-  /**
-   * Armazena os dados do usuário
-   */
   setUser(user: User): void {
     if (typeof window === "undefined") return;
     localStorage.setItem(this.userKey, JSON.stringify(user));
   }
 
-  /**
-   * Remove os dados do usuário
-   */
   removeUser(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(this.userKey);
   }
 
-  /**
-   * Obtém headers com autenticação
-   */
   getAuthHeaders(): Record<string, string> {
     const token = this.getToken();
     return {
