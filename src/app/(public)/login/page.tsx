@@ -9,7 +9,13 @@ import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { authService } from "@/lib/auth";
@@ -32,7 +38,6 @@ export default function LoginPage() {
     event.preventDefault();
     setError(null);
 
-    // Validações
     if (!email || !password) {
       setError("Please fill in all fields");
       return;
@@ -46,26 +51,25 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Fazer login usando o serviço de autenticação
-      const response = await authService.login({ email, password });
+      const response = await authService.login({ email, senha: password });
 
-      // Verificar se conta está ativa
-      if (response.user.status === "inactive") {
-        setError("Your account is inactive. Please contact support.");
-        setIsLoading(false);
-        return;
-      }
+      const user = response.data.user;
 
-      // Redirecionar baseado no role
       const roleRoutes: Record<string, string> = {
         admin: "/admin",
         supplier: "/supplier",
         store: "/store",
       };
 
-      router.push(roleRoutes[response.user.role]);
+      console.log(response.data);
+
+      router.push(roleRoutes[user.role]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid email or password. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Invalid email or password. Please try again.",
+      );
       setIsLoading(false);
     }
   };
@@ -76,7 +80,10 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="mb-8 flex justify-center">
-            <Link href="/" className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-black shadow-lg transition-transform hover:scale-105">
+            <Link
+              href="/"
+              className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-black shadow-lg transition-transform hover:scale-105"
+            >
               <SiWolframlanguage size={36} className="text-white" />
             </Link>
           </div>
@@ -84,15 +91,21 @@ export default function LoginPage() {
           {/* Login Card */}
           <Card className="border-zinc-800 bg-zinc-950/80 shadow-xl">
             <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-2xl font-bold text-white">Welcome back</CardTitle>
-              <CardDescription className="text-zinc-400">Sign in to access your account</CardDescription>
+              <CardTitle className="text-2xl font-bold text-white">
+                Welcome back
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Sign in to access your account
+              </CardDescription>
             </CardHeader>
 
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Error Alert */}
                 {error && (
-                  <Alert variant="destructive" className="border-red-900 bg-red-950/50">
+                  <Alert
+                    variant="destructive"
+                    className="flex items-center border-red-900 bg-red-950/50"
+                  >
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
@@ -122,7 +135,10 @@ export default function LoginPage() {
                     <Label htmlFor="password" className="text-zinc-300">
                       Password
                     </Label>
-                    <Link href="/forgot-password" className="text-sm font-medium text-zinc-400 transition hover:text-white hover:underline">
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm font-medium text-zinc-400 transition hover:text-white hover:underline"
+                    >
                       Forgot password?
                     </Link>
                   </div>
@@ -142,14 +158,25 @@ export default function LoginPage() {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 transition hover:text-white"
-                      aria-label={showPassword ? "Hide password" : "Show password"}>
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
 
                 {/* Submit Button */}
-                <Button type="submit" disabled={isLoading} className="w-full gap-2">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full gap-2"
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -167,7 +194,10 @@ export default function LoginPage() {
               <div className="space-y-4 text-center text-sm">
                 <p className="text-zinc-400">
                   Don&apos;t have an account?{" "}
-                  <Link href="/contact" className="font-medium text-zinc-300 transition hover:text-white hover:underline">
+                  <Link
+                    href="/contact"
+                    className="font-medium text-zinc-300 transition hover:text-white hover:underline"
+                  >
                     Request access
                   </Link>
                 </p>
@@ -178,7 +208,10 @@ export default function LoginPage() {
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href="/privacy" className="underline hover:text-zinc-400">
+                  <Link
+                    href="/privacy"
+                    className="underline hover:text-zinc-400"
+                  >
                     Privacy Policy
                   </Link>
                 </p>
