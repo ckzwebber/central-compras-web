@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "supplier" | "store";
+export type UserRole = "admin" | "fornecedor" | "loja" | "usuario";
 export type UserStatus = "active" | "inactive";
 
 export interface DefaultResponse<T> {
@@ -8,13 +8,12 @@ export interface DefaultResponse<T> {
 }
 
 export interface User {
-  id: string;
+  sub: string;
   nome: string;
+  sobrenome: string;
   email: string;
-  role: UserRole;
+  funcao: UserRole;
   status: UserStatus;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface LoginRequest {
