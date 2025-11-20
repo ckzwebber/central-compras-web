@@ -1,13 +1,8 @@
-import type {
-  LoginRequest,
-  LoginResponse,
-  ForgotPasswordRequest,
-  ForgotPasswordResponse,
-  ResetPasswordRequest,
-  ResetPasswordResponse,
-  User,
-} from "@/types/auth";
+"use client";
+
+import type { LoginRequest, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse, User } from "@/types/auth";
 import { api } from "@/config/axios.config";
+import { jwtDecode } from "jwt-decode";
 
 class AuthService {
   private tokenKey = "auth_token";
@@ -15,30 +10,39 @@ class AuthService {
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await api.post<LoginResponse>(
-        "/usuarios/login",
-        credentials,
-      );
+      console.log("🔵 Login iniciado...");
+      const response = await api.post<LoginResponse>("/usuarios/login", credentials);
+
+      console.log("🔵 Resposta da API:", response.status);
 
       if (!response.status || response.status !== 200) {
         throw new Error("Invalid credentials");
       }
 
       const data: LoginResponse = response.data;
+      console.log("🔵 Dados recebidos:", data);
 
-      this.setToken(data.token);
-      this.setUser(data.user);
+      const token = data.data.token;
+      console.log("🔵 Token extraído, salvando...");
+
+      this.setToken(token);
+      this.setCookie(token);
+      console.log("🔵 Token e cookie salvos");
+
+      const user = jwtDecode<User>(token);
+      console.log("🔵 User decodificado:", user);
+
+      this.setUser(user);
+      console.log("🔵 Login completo!");
 
       return data;
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("❌ Login error:", error);
       throw new Error("Invalid email or password");
     }
   }
 
-  async forgotPassword(
-    request: ForgotPasswordRequest,
-  ): Promise<ForgotPasswordResponse> {
+  async forgotPassword(request: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
     try {
       // TODO: Substituir por chamada real ao backend
       // const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
@@ -70,9 +74,7 @@ class AuthService {
     }
   }
 
-  async resetPassword(
-    request: ResetPasswordRequest,
-  ): Promise<ResetPasswordResponse> {
+  async resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResponse> {
     try {
       // TODO: Substituir por chamada real ao backend
       // const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
@@ -107,6 +109,7 @@ class AuthService {
   logout(): void {
     this.removeToken();
     this.removeUser();
+    this.removeCookie();
   }
 
   isAuthenticated(): boolean {
@@ -150,6 +153,35 @@ class AuthService {
       "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
     };
+  }
+
+  setCookie(token: string): void {
+    if (typeof document === "undefined") return;
+    const expirationDate = new Date();
+    expirationDate.setTime(expirationDate.getTime() + 24 * 60 * 60 * 1000);
+    document.cookie = `${this.tokenKey}=${token}; expires=${expirationDate.toUTCString()}; path=/; SameSite=Lax`;
+  }
+
+  removeCookie(): void {
+    if (typeof document === "undefined") return;
+    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  }
+
+  getCookie(): string | null {
+    if (typeof document === "undefined") return null;
+    const name = this.tokenKey + "=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(";");
+    for (let i = 0; i < cookieArray.length; i++) {
+      let cookie = cookieArray[i];
+      while (cookie.charAt(0) === " ") {
+        cookie = cookie.substring(1);
+      }
+      if (cookie.indexOf(name) === 0) {
+        return cookie.substring(name.length, cookie.length);
+      }
+    }
+    return null;
   }
 }
 
