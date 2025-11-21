@@ -1,72 +1,128 @@
 import { jwtDecode } from "jwt-decode";
 import { MiddlewareConfig, NextRequest, NextResponse } from "next/server";
+import { User } from "./types/auth";
 
-interface TokenDecoded {
-  exp: number;
+// JWT payload matches User interface directly
+interface TokenDecoded extends User {
   iat: number;
-  sub: string;
+  exp?: number;
 }
 
 const publicRoutes = [
   { path: "/", whenAuthenticated: "next" },
-  { path: "/checkout", whenAuthenticated: "next" }, // CARLOS MIGUEL: ONLY FOR TESTING PURPOSES, REMOVE LATER
   { path: "/login", whenAuthenticated: "redirect" },
   { path: "/register", whenAuthenticated: "redirect" },
-  { path: /^\/product\/[^/]+$/, whenAuthenticated: "next" }, // <-- rota dinâmica ajustada
+  { path: "/contact", whenAuthenticated: "next" },
+  { path: "/privacy", whenAuthenticated: "next" },
+  { path: "/terms", whenAuthenticated: "next" },
+  { path: "/forgot-password", whenAuthenticated: "next" },
+  { path: "/error-page", whenAuthenticated: "next" },
+  { path: /^\/product\/[^/]+$/, whenAuthenticated: "next" },
 ] as const;
+
+const protectedRoutesByRole = {
+  admin: /^\/admin(\/.*)?$/,
+  supplier: /^\/supplier(\/.*)?$/,
+  store: /^\/store(\/.*)?$/,
+} as const;
 
 const REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE = "/login";
 
 export function middleware(request: NextRequest) {
-  return NextResponse.next(); // ONLY FOR TESTING
+  const path = request.nextUrl.pathname;
+  const publicRoute = publicRoutes.find((route) => (typeof route.path === "string" ? route.path === path : route.path.test(path)));
+  const authToken = request.cookies.get("auth_token")?.value || null;
 
-  // const path = request.nextUrl.pathname;
-  // const publicRoute = publicRoutes.find((route) => (typeof route.path === "string" ? route.path === path : route.path.test(path)));
-  // const authToken = request.cookies.get("token");
+  if (!authToken && publicRoute) {
+    return NextResponse.next();
+  }
 
-  // if (!authToken && publicRoute) {
-  //   return NextResponse.next();
-  // }
+  if (!authToken && !publicRoute) {
+    const redirectUrl = request.nextUrl.clone();
 
-  // if (!authToken && !publicRoute) {
-  //   const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
 
-  //   redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
+    return NextResponse.redirect(redirectUrl);
+  }
 
-  //   return NextResponse.redirect(redirectUrl);
-  // }
+  if (authToken && publicRoute && publicRoute.whenAuthenticated === "redirect") {
+    const redirectUrl = request.nextUrl.clone();
 
-  // if (authToken && publicRoute && publicRoute.whenAuthenticated === "redirect") {
-  //   const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/";
 
-  //   redirectUrl.pathname = "/";
+    return NextResponse.redirect(redirectUrl);
+  }
 
-  //   return NextResponse.redirect(redirectUrl);
-  // }
+  if (authToken && !publicRoute) {
+    const tokenString = authToken;
 
-  // if (authToken && !publicRoute) {
-  //   const tokenString = authToken.value;
+    try {
+      const tokenDecoded: TokenDecoded = jwtDecode(tokenString);
 
-  //   if (!tokenString) {
-  //     return NextResponse.next();
-  //   }
+      // Check if token is expired (older than 24 hours)
+      if (tokenDecoded.iat * 1000 < Date.now() - 24 * 60 * 60 * 1000) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
 
-  //   const tokenDecoded: TokenDecoded = jwtDecode(tokenString);
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.delete("auth_token");
 
-  //   if (tokenDecoded.exp * 1000 < Date.now()) {
-  //     const redirectUrl = request.nextUrl.clone();
-  //     redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
+        return response;
+      }
 
-  //     const response = NextResponse.redirect(redirectUrl);
-  //     response.cookies.delete("token");
+      // Get user role directly from token (not nested in user object)
+      const userRole = tokenDecoded.funcao;
 
-  //     return response;
-  //   }
+      // Map backend roles to route patterns
+      const roleToRouteMap: Record<string, RegExp> = {
+        admin: protectedRoutesByRole.admin,
+        supplier: protectedRoutesByRole.supplier,
+        fornecedor: protectedRoutesByRole.supplier,
+        store: protectedRoutesByRole.store,
+        usuario: protectedRoutesByRole.store,
+        loja: protectedRoutesByRole.store,
+      };
 
-  //   return NextResponse.next();
-  // }
+      const allowedRoutePattern = roleToRouteMap[userRole];
 
-  // return NextResponse.next();
+      // If user role is not recognized, redirect to login
+      if (!allowedRoutePattern) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
+
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.delete("auth_token");
+
+        return response;
+      }
+
+      // Check if current path matches the allowed route pattern for user's role
+      if (!allowedRoutePattern.test(path)) {
+        const redirectUrl = request.nextUrl.clone();
+
+        if (userRole === "admin") {
+          redirectUrl.pathname = "/admin";
+        } else if (userRole === "fornecedor") {
+          redirectUrl.pathname = "/supplier";
+        } else {
+          redirectUrl.pathname = "/store";
+        }
+
+        return NextResponse.redirect(redirectUrl);
+      }
+    } catch (error) {
+      // If token is invalid, redirect to login
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
+
+      const response = NextResponse.redirect(redirectUrl);
+      response.cookies.delete("auth_token");
+
+      return response;
+    }
+  }
+
+  return NextResponse.next();
 }
 
 export const config: MiddlewareConfig = {
