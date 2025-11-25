@@ -7,6 +7,8 @@ import { SiWolframlanguage } from "react-icons/si";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/auth";
 
 export interface NavigationItem {
   name: string;
@@ -24,20 +26,20 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ navigation, panelTitle, userLabel = "Logged in as", userName = "User", onLogout }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
     } else {
-      // TODO: Implement logout
-      console.log("Logout");
+      authService.logout();
+      router.push("/login");
     }
   };
 
   return (
     <aside className="w-64 border-r border-zinc-800 bg-zinc-950/80 p-6">
       <div className="flex flex-col gap-8">
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-800 bg-black">
             <SiWolframlanguage size={22} className="text-white" />
@@ -50,7 +52,6 @@ export function DashboardSidebar({ navigation, panelTitle, userLabel = "Logged i
 
         <Separator className="bg-zinc-800" />
 
-        {/* Navigation */}
         <nav className="flex flex-col gap-2">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
@@ -68,7 +69,6 @@ export function DashboardSidebar({ navigation, panelTitle, userLabel = "Logged i
 
         <Separator className="bg-zinc-800" />
 
-        {/* User Info & Logout */}
         <div className="space-y-3">
           <div className="rounded-lg bg-zinc-900/50 p-3">
             <p className="text-xs text-zinc-500">{userLabel}</p>

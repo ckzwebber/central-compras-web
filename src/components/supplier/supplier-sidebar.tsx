@@ -2,6 +2,8 @@
 
 import { LayoutDashboard, Package, ShoppingCart, Megaphone, FileText, User, Home } from "lucide-react";
 import { DashboardSidebar, NavigationItem } from "@/components/dashboard-sidebar";
+import { authService } from "@/lib/auth";
+import { useState, useEffect } from "react";
 
 const navigation: NavigationItem[] = [
   { name: "Home", href: "/", icon: Home },
@@ -14,5 +16,20 @@ const navigation: NavigationItem[] = [
 ];
 
 export function SupplierSidebar() {
-  return <DashboardSidebar navigation={navigation} panelTitle="Supplier Panel" userName="Supplier User" />;
+  const [userName, setUserName] = useState("Supplier User");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const user = authService.getUser();
+    if (user?.nome) {
+      setUserName(user.nome);
+    }
+  }, []);
+
+  if (!mounted) {
+    return <DashboardSidebar navigation={navigation} panelTitle="Supplier Panel" userName="Supplier User" />;
+  }
+
+  return <DashboardSidebar navigation={navigation} panelTitle="Supplier Panel" userName={userName} />;
 }
