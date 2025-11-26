@@ -27,13 +27,6 @@ const stats = [
     description: "Current month",
     color: "text-purple-400",
   },
-  {
-    title: "Favorite Suppliers",
-    value: "5",
-    icon: Heart,
-    description: "Most ordered from",
-    color: "text-red-400",
-  },
 ];
 
 const recentOrders = [
@@ -95,7 +88,7 @@ export default function StoreDashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => (
             <Card key={stat.title} className="border-zinc-800 bg-zinc-950/80">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
