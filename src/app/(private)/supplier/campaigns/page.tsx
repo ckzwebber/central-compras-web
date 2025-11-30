@@ -89,20 +89,15 @@ export default function SupplierCampaignsPage() {
     return new Date(date).toLocaleDateString("pt-BR");
   };
 
-  const handleEdit = (id: string) => {
-    console.log("Edit campaign:", id);
-  };
+  const handleEdit = (id: string) => {};
 
   const handleDelete = (id: string) => {
-    console.log("Delete campaign:", id);
     // TODO: Show confirm dialog
   };
 
   const handleToggleStatus = (id: string, currentStatus: "active" | "inactive") => {
     const newStatus = currentStatus === "active" ? "inactive" : "active";
-    console.log(`Toggle campaign ${id} to ${newStatus}`);
     // TODO: API call
-    alert(`Campaign ${currentStatus === "active" ? "deactivated" : "activated"}`);
   };
 
   return (

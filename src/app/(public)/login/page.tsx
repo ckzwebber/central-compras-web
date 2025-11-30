@@ -43,12 +43,9 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log("🟢 Iniciando login...");
       const response = await authService.login({ email, senha: password });
-      console.log("🟢 Login response:", response);
 
       const user = authService.getUser();
-      console.log("🟢 User obtido:", user);
 
       if (!user) throw new Error("User data not found after login.");
 
@@ -60,7 +57,6 @@ export default function LoginPage() {
       };
 
       const targetRoute = roleRoutes[user?.funcao] || "/store";
-      console.log("🟢 Redirecionando para:", targetRoute);
 
       // Small delay to ensure cookie is set
       await new Promise((resolve) => setTimeout(resolve, 100));

@@ -108,13 +108,11 @@ export default function SupplierTermsPage() {
 
     setIsSubmitting(false);
     handleCloseDialog();
-    alert(editingTerm ? "Term updated successfully!" : "Term created successfully!");
   };
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this commercial term?")) {
       setTerms(terms.filter((t) => t.id !== id));
-      alert("Term deleted successfully!");
     }
   };
 

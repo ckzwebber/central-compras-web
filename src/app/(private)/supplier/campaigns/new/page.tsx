@@ -21,7 +21,6 @@ export default function NewCampaignPage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    console.log("Campaign created successfully!");
     router.push("/supplier/campaigns");
   };
 

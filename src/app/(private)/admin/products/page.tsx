@@ -113,12 +113,9 @@ export default function ProductsPage() {
     }
   };
 
-  const handleEdit = (id: string) => {
-    console.log("Edit product:", id);
-  };
+  const handleEdit = (id: string) => {};
 
   const handleDelete = (id: string) => {
-    console.log("Delete product:", id);
     // TODO: Show confirm dialog
   };
 

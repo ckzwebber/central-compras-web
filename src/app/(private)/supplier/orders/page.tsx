@@ -147,9 +147,7 @@ export default function SupplierOrdersPage() {
   };
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
-    console.log("Update order", orderId, "to", newStatus);
     // TODO: API call
-    alert(`Order ${orderId} updated to ${newStatus}`);
   };
 
   return (

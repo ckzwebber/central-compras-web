@@ -114,21 +114,16 @@ export default function UsersPage() {
   };
 
   const handleEdit = (id: string) => {
-    console.log("Edit user:", id);
     // TODO: Navigate to edit page or open edit dialog
   };
 
   const handleResetPassword = (id: string, email: string) => {
-    console.log("Reset password for:", email);
     // TODO: Show confirm dialog
-    alert(`Password reset link will be sent to ${email}`);
   };
 
   const handleToggleStatus = (id: string, currentStatus: UserStatus) => {
     const action = currentStatus === "active" ? "deactivate" : "activate";
-    console.log(`${action} user:`, id);
     // TODO: Show confirm dialog
-    alert(`User will be ${action}d`);
   };
 
   return (

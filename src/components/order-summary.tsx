@@ -8,7 +8,7 @@ interface OrderSummaryItem {
   id: string;
   nome: string;
   descricao: string;
-  imagem_url: string;
+  imagem_url: string | null;
   quantidade: number;
   valor_unitario: number;
 }
@@ -45,7 +45,7 @@ export function OrderSummary({ items, subtotal, shippingCost = null, shippingLab
                 <div key={item.id} className="flex items-start gap-4">
                   <div className="relative h-20 w-20">
                     <div className="h-full w-full overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
-                      <Image src={item.imagem_url} alt={item.nome} fill className="object-cover" sizes="80px" />
+                      <Image src={item.imagem_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&h=80&fit=crop"} alt={item.nome} fill className="object-cover" sizes="80px" />
                     </div>
                     <span className="absolute text-white -top-2 -right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-xs">{item.quantidade}</span>
                   </div>

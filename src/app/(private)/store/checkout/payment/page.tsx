@@ -31,7 +31,6 @@ export default function PaymentPage() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // TODO: Integrate with payment gateway (Stripe, etc.)
-    console.log("Processing payment with method:", selectedPayment);
   };
 
   // Mock data - In real app, this would come from the previous steps or state management

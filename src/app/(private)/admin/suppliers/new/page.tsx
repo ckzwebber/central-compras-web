@@ -55,8 +55,6 @@ export default function NewSupplierPage() {
 
   const handleSendEmail = () => {
     // TODO: Implement email sending
-    console.log("Sending credentials via email...");
-    alert("Credentials sent via email!");
   };
 
   const handleCloseDialog = () => {

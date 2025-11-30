@@ -13,11 +13,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import useCart from "@/hooks/states/use-cart";
 import { Produto } from "@/types/produto";
 import { produtosService } from "@/lib/produtos";
+import { fornecedoresService, Fornecedor } from "@/lib/fornecedores.service";
 import { useParams } from "next/navigation";
 
 export default function ProductPage() {
   const { cart, updateCart } = useCart();
   const [product, setProduct] = useState<Produto | null>(null);
+  const [fornecedor, setFornecedor] = useState<Fornecedor | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +35,19 @@ export default function ProductPage() {
         if (id) {
           const data = await produtosService.getById(id.toString());
           setProduct(data);
-          console.log("Produto carregado:", data);
+
+          // Buscar dados do fornecedor
+          if (data.fornecedor_id) {
+            try {
+              const fornecedorResponse = await fornecedoresService.getById(data.fornecedor_id);
+              if (fornecedorResponse.success && fornecedorResponse.data) {
+                setFornecedor(fornecedorResponse.data);
+              }
+            } catch (err) {
+              console.error("Erro ao carregar fornecedor:", err);
+              // Não bloqueia a exibição do produto se falhar ao buscar fornecedor
+            }
+          }
         }
       } catch (err) {
         console.error("Erro ao carregar produto:", err);
@@ -160,6 +174,11 @@ export default function ProductPage() {
           <div className="space-y-6">
             <div>
               <span className="inline-block rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1 text-xs font-medium text-zinc-400">{product.categoria}</span>
+              {fornecedor && (
+                <span className="ml-2 inline-block text-xs text-zinc-500">
+                  by <span className="font-medium text-zinc-400">{fornecedor.cnpj}</span>
+                </span>
+              )}
             </div>
 
             <div>

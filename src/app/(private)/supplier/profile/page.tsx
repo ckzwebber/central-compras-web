@@ -38,8 +38,6 @@ export default function SupplierProfilePage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    console.log("Profile updated successfully!");
-    alert("Profile updated successfully!");
     setIsSubmitting(false);
   };
 
@@ -53,7 +51,6 @@ export default function SupplierProfilePage() {
     const confirmPassword = formData.get("confirmPassword");
 
     if (newPassword !== confirmPassword) {
-      alert("New passwords don't match!");
       setIsChangingPassword(false);
       return;
     }
@@ -61,8 +58,6 @@ export default function SupplierProfilePage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    console.log("Password changed successfully!");
-    alert("Password changed successfully!");
     setIsChangingPassword(false);
     setIsPasswordDialogOpen(false);
   };

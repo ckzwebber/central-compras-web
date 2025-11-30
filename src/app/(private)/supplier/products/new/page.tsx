@@ -38,7 +38,6 @@ export default function NewSupplierProductPage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    console.log("Product registered successfully!");
     router.push("/supplier/products");
   };
 
