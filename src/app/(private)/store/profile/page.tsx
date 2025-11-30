@@ -1,47 +1,55 @@
 "use client";
 
-import { useState } from "react";
-import { Save, Key } from "lucide-react";
-
+import { useState, useEffect } from "react";
+import { Key, Loader2, AlertCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormSection } from "@/components/admin/form-section";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-const mockStoreData = {
-  nomeFantasia: "Store Example",
-  razaoSocial: "Store Example Ltda",
-  cnpj: "12.345.678/0001-90",
-  email: "contact@storeexample.com",
-  telefone: "(11) 98765-4321",
-  endereco: {
-    cep: "01310-100",
-    estado: "SP",
-    cidade: "São Paulo",
-    bairro: "Centro",
-    rua: "Avenida Paulista",
-    numero: "1578",
-    complemento: "Suite 200",
-  },
-};
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { jwtDecode } from "jwt-decode";
+import { User as userType } from "@/types/auth";
 
 export default function StoreProfilePage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<any>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // Carregar dados do usuário do token JWT
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+          setError("Usuário não autenticado");
+          setIsLoading(false);
+          return;
+        }
 
-    console.log("Profile updated successfully!");
-    alert("Profile updated successfully!");
-    setIsSubmitting(false);
-  };
+        // Decodificar JWT payload
+        const payload: userType = jwtDecode(token);
+        setUserData({
+          nome: payload.nome,
+          sobrenome: payload.sobrenome,
+          email: payload.email,
+          funcao: payload.funcao,
+        });
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+        setError("Erro ao carregar dados do usuário");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,163 +66,131 @@ export default function StoreProfilePage() {
       return;
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    console.log("Password changed successfully!");
-    alert("Password changed successfully!");
-    setIsChangingPassword(false);
-    setIsPasswordDialogOpen(false);
+    try {
+      // TODO: Implement password change API call
+      console.log("Changing password...", { currentPassword, newPassword });
+      alert("Password changed successfully!");
+      setIsPasswordDialogOpen(false);
+    } catch (error) {
+      console.error("Error changing password:", error);
+      alert("Failed to change password");
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="container mx-auto max-w-4xl px-6 py-8">
+      <div className="container mx-auto px-6 py-12">
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Profile</h1>
-            <p className="text-sm text-zinc-400">Manage your store information</p>
-          </div>
-          <Button onClick={() => setIsPasswordDialogOpen(true)} variant="outline" className="border-zinc-800 sm:w-auto text-black">
-            <Key className="mr-2 h-4 w-4" />
-            Change Password
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-white">Profile Settings</h1>
+          <p className="text-sm text-zinc-400">Manage your account information</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Store Information */}
-          <FormSection title="Store Information" description="Basic store data">
-            <div className="space-y-2">
-              <Label htmlFor="razaoSocial">Company Name</Label>
-              <Input id="razaoSocial" name="razaoSocial" defaultValue={mockStoreData.razaoSocial} required className="border-zinc-800 bg-zinc-950" />
-            </div>
+        {error && (
+          <Alert variant="destructive" className="mb-6 border-red-900 bg-red-950/50">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-            <div className="space-y-2">
-              <Label htmlFor="nomeFantasia">Trade Name</Label>
-              <Input id="nomeFantasia" name="nomeFantasia" defaultValue={mockStoreData.nomeFantasia} required className="border-zinc-800 bg-zinc-950" />
-            </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+          </div>
+        ) : userData ? (
+          <div className="space-y-6">
+            {/* User Information */}
+            <FormSection title="User Information" description="Your account details">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="nome">First Name</Label>
+                  <Input id="nome" name="nome" defaultValue={userData.nome} disabled className="border-zinc-800 bg-zinc-900 text-zinc-500" />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cnpj">CNPJ</Label>
-              <Input id="cnpj" name="cnpj" defaultValue={mockStoreData.cnpj} disabled className="border-zinc-800 bg-zinc-900 text-zinc-500" />
-              <p className="text-xs text-zinc-500">CNPJ cannot be changed. Contact support if needed.</p>
-            </div>
-          </FormSection>
+                <div className="space-y-2">
+                  <Label htmlFor="sobrenome">Last Name</Label>
+                  <Input id="sobrenome" name="sobrenome" defaultValue={userData.sobrenome} disabled className="border-zinc-800 bg-zinc-900 text-zinc-500" />
+                </div>
+              </div>
 
-          {/* Contact Information */}
-          <FormSection title="Contact" description="Contact information">
-            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" defaultValue={mockStoreData.email} required className="border-zinc-800 bg-zinc-950" />
+                <Input id="email" name="email" type="email" defaultValue={userData.email} disabled className="border-zinc-800 bg-zinc-900 text-zinc-500" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="telefone">Phone</Label>
-                <Input id="telefone" name="telefone" type="tel" defaultValue={mockStoreData.telefone} required className="border-zinc-800 bg-zinc-950" />
-              </div>
-            </div>
-          </FormSection>
 
-          {/* Address */}
-          <FormSection title="Address" description="Store location">
-            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="cep">ZIP Code</Label>
-                <Input id="cep" name="cep" defaultValue={mockStoreData.endereco.cep} required className="border-zinc-800 bg-zinc-950" />
+                <Label htmlFor="funcao">Role</Label>
+                <Input id="funcao" name="funcao" defaultValue={userData.funcao} disabled className="border-zinc-800 bg-zinc-900 text-zinc-500" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="estado">State</Label>
-                <select
-                  id="estado"
-                  name="estado"
-                  required
-                  defaultValue={mockStoreData.endereco.estado}
-                  className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-200 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40">
-                  <option value="">Select</option>
-                  <option value="SP">São Paulo</option>
-                  <option value="RJ">Rio de Janeiro</option>
-                  <option value="MG">Minas Gerais</option>
-                  {/* Add more states */}
-                </select>
-              </div>
-            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="cidade">City</Label>
-                <Input id="cidade" name="cidade" defaultValue={mockStoreData.endereco.cidade} required className="border-zinc-800 bg-zinc-950" />
+              <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+                <div className="flex items-start gap-3">
+                  <User className="mt-0.5 h-5 w-5 text-zinc-400" />
+                  <div>
+                    <p className="text-sm font-medium text-white">Account Type: Store</p>
+                    <p className="mt-1 text-xs text-zinc-400">You are logged in as a store. Your user account is automatically linked for placing orders with suppliers.</p>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="bairro">District</Label>
-                <Input id="bairro" name="bairro" defaultValue={mockStoreData.endereco.bairro} required className="border-zinc-800 bg-zinc-950" />
-              </div>
-            </div>
+            </FormSection>
 
-            <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-              <div className="space-y-2">
-                <Label htmlFor="rua">Street</Label>
-                <Input id="rua" name="rua" defaultValue={mockStoreData.endereco.rua} required className="border-zinc-800 bg-zinc-950" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="numero">Number</Label>
-                <Input id="numero" name="numero" defaultValue={mockStoreData.endereco.numero} required className="w-24 border-zinc-800 bg-zinc-950" />
-              </div>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setIsPasswordDialogOpen(true)} className="w-full border-zinc-700 sm:w-auto">
+                <Key className="mr-2 h-4 w-4" />
+                Change Password
+              </Button>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="complemento">Complement (optional)</Label>
-              <Input id="complemento" name="complemento" defaultValue={mockStoreData.endereco.complemento} className="border-zinc-800 bg-zinc-950" />
-            </div>
-          </FormSection>
-
-          {/* Actions */}
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isSubmitting}>
-              <Save className="mr-2 h-4 w-4" />
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </Button>
           </div>
-        </form>
+        ) : null}
+
+        {/* Change Password Dialog */}
+        <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+          <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100">
+            <DialogHeader>
+              <DialogTitle className="text-white">Change Password</DialogTitle>
+              <DialogDescription className="text-zinc-400">Enter your current password and choose a new one.</DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleChangePassword}>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input id="currentPassword" name="currentPassword" type="password" required className="border-zinc-700 bg-zinc-900" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input id="newPassword" name="newPassword" type="password" required className="border-zinc-700 bg-zinc-900" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input id="confirmPassword" name="confirmPassword" type="password" required className="border-zinc-700 bg-zinc-900" />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsPasswordDialogOpen(false)} disabled={isChangingPassword} className="border-zinc-700 text-zinc-300">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isChangingPassword}>
+                  {isChangingPassword ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Changing...
+                    </>
+                  ) : (
+                    "Change Password"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Change Password Dialog */}
-      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100">
-          <DialogHeader>
-            <DialogTitle className="text-white">Change Password</DialogTitle>
-            <DialogDescription className="text-zinc-400">Enter your current password and choose a new one</DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input id="currentPassword" name="currentPassword" type="password" required className="border-zinc-800 bg-zinc-950" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input id="newPassword" name="newPassword" type="password" required minLength={8} className="border-zinc-800 bg-zinc-950" />
-              <p className="text-xs text-zinc-500">Minimum 8 characters</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={8} className="border-zinc-800 bg-zinc-950" />
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="default" onClick={() => setIsPasswordDialogOpen(false)} className="text-zinc-300 hover:text-white">
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isChangingPassword}>
-                {isChangingPassword ? "Changing..." : "Change Password"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

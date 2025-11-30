@@ -1,57 +1,46 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Produto } from "@/types/produto";
 import { FiltersCard, ProductFilters, defaultFilters } from "./filters-card";
 import { ProductCard } from "./product-card";
-
-const MOCK_PRODUTOS: Produto[] = [
-  {
-    id: "1",
-    nome: "Product 1",
-    descricao: "Detailed description of Product 1",
-    valor_unitario: 10.0,
-    imagem_url: "https://demo.vercel.store/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0754%2F3727%2F7491%2Ffiles%2Ft-shirt-1.png%3Fv%3D1689798965&w=2048&q=75",
-    quantidade_estoque: 100,
-    categoria: "Category 1",
-    criado_em: new Date("2024-01-08T10:00:00Z"),
-    atualizado_em: new Date("2024-06-12T12:00:00Z"),
-  },
-  {
-    id: "2",
-    nome: "Product 2",
-    descricao: "Detailed description of Product 2",
-    valor_unitario: 20.0,
-    imagem_url: "https://demo.vercel.store/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0754%2F3727%2F7491%2Ffiles%2Fbag-1-dark.png%3Fv%3D1689796304&w=2048&q=75",
-    quantidade_estoque: 200,
-    categoria: "Category 2",
-    criado_em: new Date("2024-02-18T10:00:00Z"),
-    atualizado_em: new Date("2024-07-21T12:00:00Z"),
-  },
-  {
-    id: "3",
-    nome: "Product 3",
-    descricao: "Detailed description of Product 3",
-    valor_unitario: 15.5,
-    imagem_url: "https://demo.vercel.store/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0754%2F3727%2F7491%2Ffiles%2Fhoodie-1.png%3Fv%3D1690003482&w=2048&q=75",
-    quantidade_estoque: 80,
-    categoria: "Category 1",
-    criado_em: new Date("2024-03-10T10:00:00Z"),
-    atualizado_em: new Date("2024-09-05T12:00:00Z"),
-  },
-];
+import { produtosService } from "@/lib/produtos";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const Home = () => {
   const [filters, setFilters] = useState<ProductFilters>(defaultFilters);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Carregar produtos ao montar o componente
+  useEffect(() => {
+    const loadProdutos = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await produtosService.getAll();
+        setProdutos(data);
+      } catch (err) {
+        console.error("Erro ao carregar produtos:", err);
+        setError(err instanceof Error ? err.message : "Erro ao carregar produtos");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProdutos();
+  }, []);
 
   const categories = useMemo(() => {
-    const unique = new Set(MOCK_PRODUTOS.map((produto) => produto.categoria));
+    const unique = new Set(produtos.map((produto) => produto.categoria));
     return Array.from(unique).sort();
-  }, []);
+  }, [produtos]);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = filters.search.trim().toLowerCase();
 
-    return MOCK_PRODUTOS.filter((produto) => {
+    return produtos.filter((produto) => {
       const matchesSearch = normalizedSearch.length === 0 || produto.nome.toLowerCase().includes(normalizedSearch) || produto.descricao.toLowerCase().includes(normalizedSearch);
 
       const matchesCategory = filters.category === "all" || produto.categoria === filters.category;
@@ -62,7 +51,7 @@ export const Home = () => {
 
       return matchesSearch && matchesCategory && matchesMin && matchesMax;
     });
-  }, [filters]);
+  }, [filters, produtos]);
 
   return (
     <main className="container mx-auto px-4 py-12">
@@ -71,13 +60,24 @@ export const Home = () => {
         <p className="text-sm text-muted-foreground">Explore available products and apply filters to refine your search.</p>{" "}
       </div>
 
+      {error && (
+        <Alert variant="destructive" className="mb-6 border-red-900 bg-red-950/50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
         <aside className="lg:max-w-[280px]">
           <FiltersCard filters={filters} categories={categories} onFiltersChange={setFilters} />
         </aside>
 
         <section className="flex flex-col gap-6">
-          {filteredProducts.length > 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {filteredProducts.map((produto) => (
                 <ProductCard key={produto.id} produto={produto} />

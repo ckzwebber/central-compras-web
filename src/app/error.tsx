@@ -66,7 +66,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                   <RefreshCw className="h-4 w-4" />
                   Try Again
                 </Button>
-                <Button asChild variant="link" className="flex-1 gap-2">
+                <Button asChild variant="default" className="flex-1 gap-2">
                   <Link href="/">
                     <Home className="h-4 w-4" />
                     Back to Home

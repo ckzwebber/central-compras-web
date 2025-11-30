@@ -15,6 +15,8 @@ type ProductCardProps = {
 export const ProductCard = ({ produto }: ProductCardProps) => {
   const { cart, updateCart } = useCart();
 
+  const imagemUrl = produto.imagem_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop";
+
   const addToCart = (produto: Produto) => {
     if (produto) {
       if (cart?.produtos.find((item) => item.id === produto.id)) {
@@ -29,7 +31,6 @@ export const ProductCard = ({ produto }: ProductCardProps) => {
         });
       }
 
-      // Open the global cart from navbar
       if (typeof window !== "undefined" && (window as any).openCart) {
         (window as any).openCart();
       }
@@ -47,7 +48,7 @@ export const ProductCard = ({ produto }: ProductCardProps) => {
       <Card className="bg-zinc-950 overflow-hidden border border-zinc-800 transition-all duration-200 hover:scale-101 hover:shadow-lg hover:border-zinc-500">
         <CardHeader className="p-0">
           <div className="relative aspect-square w-full bg-zinc-950">
-            <Image src={produto.imagem_url} alt={produto.nome} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+            <Image src={imagemUrl} alt={produto.nome} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
           </div>
         </CardHeader>
         <CardContent className="space-y-2 p-4">

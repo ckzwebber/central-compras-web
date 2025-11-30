@@ -39,7 +39,8 @@ export default function StoreCartPage() {
   };
 
   const handleCheckout = () => {
-    router.push("/checkout");
+    // Redirecionar para página de checkout
+    router.push("/store/checkout");
   };
 
   const handleClearCart = () => {
@@ -91,7 +92,7 @@ export default function StoreCartPage() {
                     <div className="flex gap-6">
                       {/* Product Image */}
                       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
-                        <Image src={item.imagem_url} alt={item.nome} fill className="object-cover" sizes="96px" />
+                        <Image src={item.imagem_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop"} alt={item.nome} fill className="object-cover" sizes="96px" />
                       </div>
 
                       {/* Product Details */}
