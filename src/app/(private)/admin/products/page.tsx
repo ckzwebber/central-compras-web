@@ -1,100 +1,71 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search, Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, Plus, MoreVertical, Trash2, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
-interface Product {
-  id: string;
-  nome: string;
-  descricao: string;
-  categoria: string;
-  valorUnitario: number;
-  estoque: number;
-  fornecedor: {
-    id: string;
-    nomeFantasia: string;
-  };
-  imagemUrl?: string;
-}
-
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    nome: "Notebook Dell Inspiron 15",
-    descricao: "Intel Core i5, 8GB RAM, 256GB SSD",
-    categoria: "Electronics",
-    valorUnitario: 3299.99,
-    estoque: 45,
-    fornecedor: {
-      id: "1",
-      nomeFantasia: "Tech Distribuidora",
-    },
-  },
-  {
-    id: "2",
-    nome: "Mouse Logitech MX Master 3",
-    descricao: "Wireless, Ergonomic, Programmable Buttons",
-    categoria: "Accessories",
-    valorUnitario: 459.9,
-    estoque: 120,
-    fornecedor: {
-      id: "1",
-      nomeFantasia: "Tech Distribuidora",
-    },
-  },
-  {
-    id: "3",
-    nome: "Cadeira Gamer DT3Sports",
-    descricao: "Ergonomic, Adjustable Height, Black/Red",
-    categoria: "Furniture",
-    valorUnitario: 1199.0,
-    estoque: 28,
-    fornecedor: {
-      id: "2",
-      nomeFantasia: "Office Solutions",
-    },
-  },
-  {
-    id: "4",
-    nome: 'Monitor LG UltraWide 29"',
-    descricao: "2560x1080, IPS, HDMI, USB-C",
-    categoria: "Electronics",
-    valorUnitario: 1899.99,
-    estoque: 15,
-    fornecedor: {
-      id: "1",
-      nomeFantasia: "Tech Distribuidora",
-    },
-  },
-  {
-    id: "5",
-    nome: "Teclado Mecânico Keychron K2",
-    descricao: "RGB, Bluetooth, Hot-swappable, Brown Switches",
-    categoria: "Accessories",
-    valorUnitario: 699.9,
-    estoque: 8,
-    fornecedor: {
-      id: "3",
-      nomeFantasia: "Importadora Global",
-    },
-  },
-];
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import * as adminProductsService from "@/lib/admin-products.service";
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<adminProductsService.Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<adminProductsService.Product | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await adminProductsService.adminProductsService.getAllProducts();
+      setProducts(data.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (product: adminProductsService.Product) => {
+    setProductToDelete(product);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+
+    try {
+      setDeleting(true);
+      await adminProductsService.adminProductsService.deleteProduct(productToDelete.id);
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
+      await fetchProducts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete product");
+      setDeleteDialogOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return mockProducts;
+    if (!searchQuery.trim()) return products;
 
     const query = searchQuery.toLowerCase();
-    return mockProducts.filter((product) => product.nome.toLowerCase().includes(query) || product.categoria.toLowerCase().includes(query) || product.fornecedor.nomeFantasia.toLowerCase().includes(query));
-  }, [searchQuery]);
+    return products.filter((product) => product.nome.toLowerCase().includes(query) || product.categoria?.toLowerCase().includes(query) || (product.fornecedor_id && String(product.fornecedor_id).includes(query)));
+  }, [products, searchQuery]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -113,11 +84,25 @@ export default function ProductsPage() {
     }
   };
 
-  const handleEdit = (id: string) => {};
-
-  const handleDelete = (id: string) => {
-    // TODO: Show confirm dialog
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="container mx-auto px-6 py-8">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-white">Products</h1>
+              <p className="text-sm text-zinc-400">Manage products in the catalog</p>
+            </div>
+          </div>
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardContent className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -135,6 +120,14 @@ export default function ProductsPage() {
             </Link>
           </Button>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Search */}
         <div className="mb-6">
@@ -154,7 +147,7 @@ export default function ProductsPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => {
-              const stockStatus = getStockStatus(product.estoque);
+              const stockStatus = getStockStatus(product.quantidade_estoque);
               return (
                 <Card key={product.id} className="group border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/60">
                   <CardHeader className="pb-4">
@@ -170,11 +163,7 @@ export default function ProductsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                          <DropdownMenuItem onClick={() => handleEdit(product.id)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(product.id)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
+                          <DropdownMenuItem onClick={() => handleDeleteClick(product)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
@@ -185,23 +174,23 @@ export default function ProductsPage() {
                   <CardContent className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-zinc-400">Category:</span>
-                      <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300">{product.categoria}</span>
+                      <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300">{product.categoria || "N/A"}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-400">Supplier:</span>
-                      <span className="text-zinc-200">{product.fornecedor.nomeFantasia}</span>
+                      <span className="text-zinc-400">Supplier ID:</span>
+                      <span className="text-zinc-200 truncate w-30">{product.fornecedor_id}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-zinc-400">Unit Price:</span>
-                      <span className="font-semibold text-white">{formatCurrency(product.valorUnitario)}</span>
+                      <span className="font-semibold text-white">{formatCurrency(product.valor_unitario)}</span>
                     </div>
 
                     <div className="flex items-center justify-between border-t border-zinc-800 pt-3 text-sm">
                       <span className="text-zinc-400">Stock:</span>
                       <div className="flex items-center gap-2">
-                        <span className={`font-medium ${stockStatus.color}`}>{product.estoque} units</span>
+                        <span className={`font-medium ${stockStatus.color}`}>{product.quantidade_estoque} units</span>
                       </div>
                     </div>
                   </CardContent>
@@ -211,6 +200,31 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="border-zinc-800 bg-zinc-950">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Product</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              Are you sure you want to delete <span className="font-semibold text-white">{productToDelete?.nome}</span>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleting} className="bg-red-600 text-white hover:bg-red-700 disabled:opacity-50">
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

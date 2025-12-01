@@ -1,62 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormSection } from "@/components/admin/form-section";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-interface CredentialsDialog {
-  open: boolean;
-  email: string;
-  password: string;
-}
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import * as adminStoresService from "@/lib/admin-stores.service";
+import * as adminService from "@/lib/admin.service";
 
 export default function NewStorePage() {
   const router = useRouter();
+  const [users, setUsers] = useState<adminService.User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [credentialsDialog, setCredentialsDialog] = useState<CredentialsDialog>({
-    open: false,
-    email: "",
-    password: "",
-  });
-  const [copied, setCopied] = useState<"email" | "password" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const data = await adminService.adminService.getAllUsers();
+      // Filter to only users with role "loja" (store)
+      const storeUsers = data.data.filter((user: any) => user.funcao === "loja");
+      setUsers(storeUsers);
+    } catch (err) {
+      setError("Failed to load users");
+      console.log(err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const formData = new FormData(e.currentTarget);
+      const selectedUserId = formData.get("usuario_id") as string;
 
-    // Mock generated credentials
-    const generatedEmail = "store" + Math.floor(Math.random() * 10000) + "@guristore.com";
-    const generatedPassword = Math.random().toString(36).slice(-8);
+      // Find selected user to get their endereco_id
+      const selectedUser = users.find((u) => u.id === selectedUserId);
+      if (!selectedUser) {
+        throw new Error("Selected user not found");
+      }
 
-    setCredentialsDialog({
-      open: true,
-      email: generatedEmail,
-      password: generatedPassword,
-    });
+      if (!selectedUser.endereco_id) {
+        throw new Error("Selected user must have an address registered");
+      }
 
-    setIsSubmitting(false);
+      // Create store with same endereco_id as the user
+      const storeData: adminStoresService.CreateStoreData = {
+        nome: formData.get("name") as string,
+        cnpj: formData.get("cnpj") as string,
+        usuario_id: selectedUserId,
+        endereco_id: selectedUser.endereco_id,
+      };
+
+      await adminStoresService.adminStoresService.createStore(storeData);
+      router.push("/admin/stores");
+    } catch (err: any) {
+      setError(err.response.data.message ? err.response.data.message : "Failed to create store");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const copyToClipboard = (text: string, type: "email" | "password") => {
-    navigator.clipboard.writeText(text);
-    setCopied(type);
-    setTimeout(() => setCopied(null), 2000);
-  };
-
-  const handleCloseDialog = () => {
-    setCredentialsDialog({ open: false, email: "", password: "" });
-    router.push("/admin/stores");
-  };
+  if (loadingUsers) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="container mx-auto max-w-4xl px-6 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight text-white">New Store</h1>
+            <p className="text-sm text-zinc-400">Register a new store in the system.</p>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -70,8 +103,16 @@ export default function NewStorePage() {
           </Button>
 
           <h1 className="text-3xl font-bold tracking-tight text-white">New Store</h1>
-          <p className="text-sm text-zinc-400">Register a new store in the system. Credentials will be generated automatically.</p>
+          <p className="text-sm text-zinc-400">Register a new store in the system.</p>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <FormSection title="Store Information" description="Basic data for store identification">
@@ -80,137 +121,46 @@ export default function NewStorePage() {
               <Input id="name" name="name" placeholder="e.g., Center Supermarket" required className="border-zinc-800 bg-zinc-950" />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cnpj">CNPJ</Label>
-              <Input id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" required className="border-zinc-800 bg-zinc-950" />
-            </div>
-          </FormSection>
-
-          <FormSection title="Address" description="Store location">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="zipcode">ZIP Code</Label>
-                <Input id="zipcode" name="zipcode" placeholder="00000-000" required className="border-zinc-800 bg-zinc-950" />
+                <Label htmlFor="cnpj">CNPJ</Label>
+                <Input id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" required className="border-zinc-800 bg-zinc-950" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
+                <Label htmlFor="usuario_id">Store Owner (User)</Label>
                 <select
-                  id="state"
-                  name="state"
+                  id="usuario_id"
+                  name="usuario_id"
                   required
                   className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-200 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40">
-                  <option value="">Select</option>
-                  <option value="SP">São Paulo</option>
-                  <option value="RJ">Rio de Janeiro</option>
-                  <option value="MG">Minas Gerais</option>
-                  {/* Add more states */}
+                  <option value="">Select a user</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.nome} ({user.email})
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" placeholder="e.g., São Paulo" required className="border-zinc-800 bg-zinc-950" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="neighborhood">Neighborhood</Label>
-                <Input id="neighborhood" name="neighborhood" placeholder="e.g., Downtown" required className="border-zinc-800 bg-zinc-950" />
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-              <div className="space-y-2">
-                <Label htmlFor="street">Street</Label>
-                <Input id="street" name="street" placeholder="e.g., Flores Street" required className="border-zinc-800 bg-zinc-950" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="number">Number</Label>
-                <Input id="number" name="number" placeholder="123" required className="w-24 border-zinc-800 bg-zinc-950" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="complement">Complement (optional)</Label>
-              <Input id="complement" name="complement" placeholder="e.g., Suite 5" className="border-zinc-800 bg-zinc-950" />
-            </div>
-          </FormSection>
-
-          {/* Manager */}
-          <FormSection title="Manager" description="Store manager details">
-            <div className="space-y-2">
-              <Label htmlFor="manager_name">Full Name</Label>
-              <Input id="manager_name" name="manager_name" placeholder="e.g., João Silva" required className="border-zinc-800 bg-zinc-950" />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="manager_email">Email</Label>
-                <Input id="manager_email" name="manager_email" type="email" placeholder="joao@email.com" required className="border-zinc-800 bg-zinc-950" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="manager_phone">Phone</Label>
-                <Input id="manager_phone" name="manager_phone" type="tel" placeholder="(11) 99999-9999" required className="border-zinc-800 bg-zinc-950" />
-              </div>
-            </div>
-          </FormSection>
-
+          </FormSection>{" "}
           {/* Actions */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="default" onClick={() => router.push("/admin/stores")} className="text-zinc-300 hover:text-white">
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Registering..." : "Register Store"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registering...
+                </>
+              ) : (
+                "Register Store"
+              )}
             </Button>
           </div>
         </form>
       </div>
-
-      {/* Credentials Dialog */}
-      <Dialog open={credentialsDialog.open} onOpenChange={handleCloseDialog}>
-        <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-white">
-              <CheckCircle2 className="h-5 w-5 text-green-400" />
-              Store Registered Successfully!
-            </DialogTitle>
-            <DialogDescription className="text-zinc-400">Access credentials have been generated. Copy and send them to the manager.</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label className="text-zinc-300">Access Email</Label>
-              <div className="flex gap-2">
-                <Input readOnly value={credentialsDialog.email} className="border-zinc-800 bg-zinc-900 text-white" />
-                <Button type="button" variant="default" size="icon" className="border-zinc-800" onClick={() => copyToClipboard(credentialsDialog.email, "email")}>
-                  {copied === "email" ? <CheckCircle2 className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-zinc-300">Temporary Password</Label>
-              <div className="flex gap-2">
-                <Input readOnly value={credentialsDialog.password} className="border-zinc-800 bg-zinc-900 font-mono text-white" />
-                <Button type="button" variant="default" size="icon" className="border-zinc-800" onClick={() => copyToClipboard(credentialsDialog.password, "password")}>
-                  {copied === "password" ? <CheckCircle2 className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-              <p className="text-sm text-zinc-400">⚠️ Important: Send these credentials to the manager. The password must be changed on first access.</p>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button onClick={handleCloseDialog} className="w-full">
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -1,139 +1,140 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search, MoreVertical, Edit, Key, Power } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, MoreVertical, Trash2, Loader2, AlertCircle, Plus } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import * as adminService from "@/lib/admin.service";
 
-type UserType = "admin" | "store" | "supplier";
-type UserStatus = "active" | "inactive";
-
-interface User {
-  id: string;
-  nome: string;
-  email: string;
-  tipo: UserType;
-  status: UserStatus;
-  createdAt: string;
-}
-
-const mockUsers: User[] = [
-  {
-    id: "1",
-    nome: "João Silva",
-    email: "joao.silva@guristore.com",
-    tipo: "admin",
-    status: "active",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    nome: "Maria Santos",
-    email: "maria.santos@guristore.com",
-    tipo: "admin",
-    status: "active",
-    createdAt: "2024-01-20",
-  },
-  {
-    id: "3",
-    nome: "Loja ABC - Pedro Costa",
-    email: "store2847@guristore.com",
-    tipo: "store",
-    status: "active",
-    createdAt: "2024-02-01",
-  },
-  {
-    id: "4",
-    nome: "Supermercado XYZ - Ana Lima",
-    email: "store1532@guristore.com",
-    tipo: "store",
-    status: "active",
-    createdAt: "2024-02-05",
-  },
-  {
-    id: "5",
-    nome: "Tech Distribuidora",
-    email: "supplier5832@guristore.com",
-    tipo: "supplier",
-    status: "active",
-    createdAt: "2024-02-10",
-  },
-  {
-    id: "6",
-    nome: "Office Solutions",
-    email: "supplier2749@guristore.com",
-    tipo: "supplier",
-    status: "active",
-    createdAt: "2024-02-12",
-  },
-  {
-    id: "7",
-    nome: "Minimercado do Bairro - Carlos Souza",
-    email: "store9843@guristore.com",
-    tipo: "store",
-    status: "inactive",
-    createdAt: "2024-01-28",
-  },
-];
+type UserType = "admin" | "loja" | "fornecedor";
 
 export default function UsersPage() {
+  const [users, setUsers] = useState<adminService.User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<UserType | "all">("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<adminService.User | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await adminService.adminService.getAllUsers();
+      setUsers(data.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (user: adminService.User) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
+
+    try {
+      setDeleting(true);
+      await adminService.adminService.deleteUser(userToDelete.id);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      await fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete user");
+      setDeleteDialogOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filteredUsers = useMemo(() => {
-    let users = mockUsers;
+    let filteredList = users;
 
     // Filter by type
     if (filterType !== "all") {
-      users = users.filter((user) => user.tipo === filterType);
+      filteredList = filteredList.filter((user) => user.funcao === filterType);
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      users = users.filter((user) => user.nome.toLowerCase().includes(query) || user.email.toLowerCase().includes(query));
+      filteredList = filteredList.filter((user) => user.nome.toLowerCase().includes(query) || user.email.toLowerCase().includes(query));
     }
 
-    return users;
-  }, [searchQuery, filterType]);
+    return filteredList;
+  }, [users, searchQuery, filterType]);
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("pt-BR");
+    return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
   const getUserTypeConfig = (type: UserType) => {
     const configs = {
       admin: { label: "Admin", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
-      store: { label: "Store", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-      supplier: { label: "Supplier", color: "bg-green-500/10 text-green-400 border-green-500/20" },
+      loja: { label: "Store", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
+      fornecedor: { label: "Supplier", color: "bg-green-500/10 text-green-400 border-green-500/20" },
     };
     return configs[type];
   };
 
-  const handleEdit = (id: string) => {
-    // TODO: Navigate to edit page or open edit dialog
-  };
-
-  const handleResetPassword = (id: string, email: string) => {
-    // TODO: Show confirm dialog
-  };
-
-  const handleToggleStatus = (id: string, currentStatus: UserStatus) => {
-    const action = currentStatus === "active" ? "deactivate" : "activate";
-    // TODO: Show confirm dialog
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="container mx-auto px-6 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight text-white">Users</h1>
+            <p className="text-sm text-zinc-400">Manage system users and their permissions</p>
+          </div>
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardContent className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Users</h1>
-          <p className="text-sm text-zinc-400">Manage system users and their permissions</p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Users</h1>
+            <p className="text-sm text-zinc-400">Manage system users and their permissions</p>
+          </div>
+          <Button asChild className="sm:w-auto">
+            <Link href="/admin/users/new">
+              <Plus className="mr-2 h-4 w-4" />
+              New User
+            </Link>
+          </Button>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Search & Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
@@ -156,15 +157,15 @@ export default function UsersPage() {
               Admins
             </Button>
             <Button
-              variant={filterType === "store" ? "default" : "outline"}
-              onClick={() => setFilterType("store")}
-              className={filterType !== "store" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
+              variant={filterType === "loja" ? "default" : "outline"}
+              onClick={() => setFilterType("loja")}
+              className={filterType !== "loja" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Stores
             </Button>
             <Button
-              variant={filterType === "supplier" ? "default" : "outline"}
-              onClick={() => setFilterType("supplier")}
-              className={filterType !== "supplier" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
+              variant={filterType === "fornecedor" ? "default" : "outline"}
+              onClick={() => setFilterType("fornecedor")}
+              className={filterType !== "fornecedor" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Suppliers
             </Button>
           </div>
@@ -180,7 +181,7 @@ export default function UsersPage() {
         ) : (
           <div className="space-y-3">
             {filteredUsers.map((user) => {
-              const typeConfig = getUserTypeConfig(user.tipo);
+              const typeConfig = getUserTypeConfig(user.funcao);
               return (
                 <Card key={user.id} className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/60">
                   <CardContent className="p-4">
@@ -191,13 +192,12 @@ export default function UsersPage() {
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-white">{user.nome}</h3>
                             <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${typeConfig.color}`}>{typeConfig.label}</span>
-                            {user.status === "inactive" && <span className="rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-0.5 text-xs font-medium text-zinc-400">Inactive</span>}
                           </div>
                           <p className="mt-0.5 text-sm text-zinc-400">{user.email}</p>
                         </div>
 
                         {/* Created Date */}
-                        <div className="hidden text-sm text-zinc-400 sm:block">Registered: {formatDate(user.createdAt)}</div>
+                        <div className="hidden text-sm text-zinc-400 sm:block">Registered: {formatDate(user.criado_em)}</div>
                       </div>
 
                       <DropdownMenu>
@@ -207,20 +207,9 @@ export default function UsersPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                          <DropdownMenuItem onClick={() => handleEdit(user.id)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleResetPassword(user.id, user.email)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
-                            <Key className="mr-2 h-4 w-4" />
-                            Reset Password
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-zinc-800" />
-                          <DropdownMenuItem
-                            onClick={() => handleToggleStatus(user.id, user.status)}
-                            className={user.status === "active" ? "text-red-400 focus:bg-zinc-900 focus:text-red-400" : "text-green-400 focus:bg-zinc-900 focus:text-green-400"}>
-                            <Power className="mr-2 h-4 w-4" />
-                            {user.status === "active" ? "Deactivate" : "Activate"}
+                          <DropdownMenuItem onClick={() => handleDeleteClick(user)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -232,6 +221,31 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="border-zinc-800 bg-zinc-950">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete User</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              Are you sure you want to delete <span className="font-semibold text-white">{userToDelete?.nome}</span>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleting} className="bg-red-600 text-white hover:bg-red-700 disabled:opacity-50">
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

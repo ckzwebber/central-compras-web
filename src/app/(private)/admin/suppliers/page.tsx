@@ -1,54 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Search, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, MoreVertical, Trash2, Loader2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
-// Mock data
-const mockSuppliers = [
-  {
-    id: "1",
-    razaoSocial: "Distribuidora ABC Ltda",
-    nomeFantasia: "ABC Distribuidora",
-    cnpj: "12.345.678/0001-90",
-    email: "contato@abc.com",
-    telefone: "(11) 3333-4444",
-    cidade: "São Paulo",
-    estado: "SP",
-  },
-  {
-    id: "2",
-    razaoSocial: "Fornecedor XYZ S.A.",
-    nomeFantasia: "XYZ Atacado",
-    cnpj: "98.765.432/0001-10",
-    email: "vendas@xyz.com",
-    telefone: "(21) 2222-3333",
-    cidade: "Rio de Janeiro",
-    estado: "RJ",
-  },
-  {
-    id: "3",
-    razaoSocial: "Importadora Global Ltda",
-    nomeFantasia: "Global Import",
-    cnpj: "11.222.333/0001-44",
-    email: "import@global.com",
-    telefone: "(31) 4444-5555",
-    cidade: "Belo Horizonte",
-    estado: "MG",
-  },
-];
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import * as adminSuppliersService from "@/lib/admin-suppliers.service";
 
 export default function SuppliersPage() {
+  const [suppliers, setSuppliers] = useState<adminSuppliersService.Supplier[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [supplierToDelete, setSupplierToDelete] = useState<adminSuppliersService.Supplier | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const filteredSuppliers = mockSuppliers.filter(
-    (supplier) => supplier.razaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) || supplier.nomeFantasia.toLowerCase().includes(searchTerm.toLowerCase()) || supplier.cnpj.includes(searchTerm)
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
+
+  const fetchSuppliers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await adminSuppliersService.adminSuppliersService.getAllSuppliers();
+      setSuppliers(data.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load suppliers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (supplier: adminSuppliersService.Supplier) => {
+    setSupplierToDelete(supplier);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!supplierToDelete) return;
+
+    try {
+      setDeleting(true);
+      await adminSuppliersService.adminSuppliersService.deleteSupplier(supplierToDelete.id);
+      setDeleteDialogOpen(false);
+      setSupplierToDelete(null);
+      await fetchSuppliers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete supplier");
+      setDeleteDialogOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const filteredSuppliers = suppliers.filter(
+    (supplier) => supplier.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) || supplier.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) || supplier.cnpj?.includes(searchTerm)
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="container mx-auto px-6 py-8">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-white">Suppliers</h1>
+              <p className="text-sm text-zinc-400">Manage registered suppliers in the system</p>
+            </div>
+          </div>
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardContent className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -67,6 +101,14 @@ export default function SuppliersPage() {
           </Button>
         </div>
 
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {/* Search */}
         <div className="mb-6">
           <div className="relative">
@@ -84,24 +126,17 @@ export default function SuppliersPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold text-white">{supplier.nomeFantasia}</h3>
-                        <span className="text-sm text-zinc-500">
-                          {supplier.cidade} - {supplier.estado}
-                        </span>
+                        <h3 className="text-lg font-semibold text-white">{supplier.nome_fantasia || "N/A"}</h3>
                       </div>
-                      <p className="mt-1 text-sm text-zinc-400">{supplier.razaoSocial}</p>
-                      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      <p className="mt-1 text-sm text-zinc-400">{supplier.razao_social || "N/A"}</p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         <div>
                           <p className="text-xs text-zinc-500">CNPJ</p>
-                          <p className="text-sm text-zinc-300">{supplier.cnpj}</p>
+                          <p className="text-sm text-zinc-300">{supplier.cnpj || "N/A"}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-zinc-500">Email</p>
-                          <p className="text-sm text-zinc-300">{supplier.email}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-zinc-500">Phone</p>
-                          <p className="text-sm text-zinc-300">{supplier.telefone}</p>
+                          <p className="text-xs text-zinc-500">User ID</p>
+                          <p className="text-sm text-zinc-300">{supplier.usuario_id || "N/A"}</p>
                         </div>
                       </div>
                     </div>
@@ -113,11 +148,7 @@ export default function SuppliersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                        <DropdownMenuItem className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
+                        <DropdownMenuItem onClick={() => handleDeleteClick(supplier)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
@@ -136,6 +167,31 @@ export default function SuppliersPage() {
           </Card>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="border-zinc-800 bg-zinc-950">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Supplier</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              Are you sure you want to delete <span className="font-semibold text-white">{supplierToDelete?.nome_fantasia}</span>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleting} className="bg-red-600 text-white hover:bg-red-700 disabled:opacity-50">
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,135 +1,227 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Store, Truck, Package, ShoppingCart } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Store, Truck, Package, Users, Loader2, AlertCircle, UserPlus, PackagePlus, Building2 } from "lucide-react";
+import Link from "next/link";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { adminService } from "@/lib/admin.service";
 
-// Mock data
-const stats = [
-  {
-    title: "Total Stores",
-    value: "24",
-    icon: Store,
-    description: "+3 this month",
-    color: "text-blue-400",
-  },
-  {
-    title: "Suppliers",
-    value: "12",
-    icon: Truck,
-    description: "+2 this month",
-    color: "text-green-400",
-  },
-  {
-    title: "Products",
-    value: "156",
-    icon: Package,
-    description: "+18 this month",
-    color: "text-purple-400",
-  },
-  {
-    title: "Orders",
-    value: "89",
-    icon: ShoppingCart,
-    description: "+12 this week",
-    color: "text-yellow-400",
-  },
-];
-
-const recentOrders = [
-  { id: "ORD-001", store: "Center Store", value: 1250.0, status: "Processing" },
-  { id: "ORD-002", store: "SuperMix", value: 890.5, status: "Delivered" },
-  { id: "ORD-003", store: "MegaStore", value: 2100.0, status: "Pending" },
-  { id: "ORD-004", store: "Plus Store", value: 450.0, status: "Processing" },
-];
-
-const recentRegistrations = [
-  { type: "Store", name: "New ABC Store", date: "2 days ago" },
-  { type: "Supplier", name: "XYZ Distribution", date: "3 days ago" },
-  { type: "Store", name: "Top Supermarket", date: "5 days ago" },
-];
+interface Statistics {
+  totalUsers: number;
+  totalStores: number;
+  totalSuppliers: number;
+  totalProducts: number;
+}
 
 export default function AdminDashboard() {
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
+  const [stats, setStats] = useState<Statistics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await adminService.getStatistics();
+        setStats(data);
+      } catch (err) {
+        console.error("Error loading statistics:", err);
+        setError("Failed to load dashboard statistics");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStats();
+  }, []);
+
+  const statsCards = stats
+    ? [
+        {
+          title: "Total Users",
+          value: stats.totalUsers.toString(),
+          icon: Users,
+          description: "Registered users",
+          color: "text-blue-400",
+        },
+        {
+          title: "Total Stores",
+          value: stats.totalStores.toString(),
+          icon: Store,
+          description: "Active stores",
+          color: "text-green-400",
+        },
+        {
+          title: "Suppliers",
+          value: stats.totalSuppliers.toString(),
+          icon: Truck,
+          description: "Active suppliers",
+          color: "text-purple-400",
+        },
+        {
+          title: "Products",
+          value: stats.totalProducts.toString(),
+          icon: Package,
+          description: "Available products",
+          color: "text-yellow-400",
+        },
+      ]
+    : [];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
-          <p className="text-sm text-zinc-400">Overview of Central Purchasing System</p>
-        </div>
-        <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.title} className="border-zinc-800 bg-zinc-950/80">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-zinc-400">{stat.title}</CardTitle>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <p className="text-xs text-zinc-500">{stat.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+          <h1 className="text-3xl font-bold tracking-tight text-white">Admin Dashboard</h1>
+          <p className="text-sm text-zinc-400">Central Purchasing System Administration</p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Recent Orders */}
-          <Card className="border-zinc-800 bg-zinc-950/80">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-white">Recent Orders</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentOrders.map((order, index) => (
-                  <div key={order.id}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-white">{order.id}</p>
-                        <p className="text-xs text-zinc-500">{order.store}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-white">{formatCurrency(order.value)}</p>
-                        <span className={`inline-block text-xs ${order.status === "Delivered" ? "text-green-400" : order.status === "Processing" ? "text-yellow-400" : "text-zinc-400"}`}>{order.status}</span>
-                      </div>
-                    </div>
-                    {index < recentOrders.length - 1 && <Separator className="mt-4 bg-zinc-800" />}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {error && (
+          <Alert variant="destructive" className="mb-6 border-red-900 bg-red-950/50">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Recent Registrations */}
-          <Card className="border-zinc-800 bg-zinc-950/80">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-white">Recent Registrations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentRegistrations.map((reg, index) => (
-                  <div key={index}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="inline-block rounded-full border border-zinc-800 bg-zinc-900/50 px-2 py-0.5 text-xs text-zinc-400">{reg.type}</span>
-                          <p className="text-sm font-medium text-white">{reg.name}</p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-zinc-500">{reg.date}</p>
-                    </div>
-                    {index < recentRegistrations.length - 1 && <Separator className="mt-4 bg-zinc-800" />}
-                  </div>
-                ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+          </div>
+        ) : (
+          <>
+            {/* Stats Grid */}
+            <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {statsCards.map((stat) => (
+                <Card key={stat.title} className="border-zinc-800 bg-zinc-950/80">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-zinc-400">{stat.title}</CardTitle>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-white">{stat.value}</div>
+                    <p className="text-xs text-zinc-500">{stat.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-8">
+              <h2 className="mb-4 text-lg font-semibold text-white">Quick Actions</h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Button asChild variant="default" className="h-auto flex-col gap-2 border-zinc-800 py-6 hover:bg-zinc-900">
+                  <Link href="/admin/users">
+                    <UserPlus className="h-5 w-5 text-blue-400" />
+                    <span className="text-sm font-medium text-white">Manage Users</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="default" className="h-auto flex-col gap-2 border-zinc-800 py-6 hover:bg-zinc-900">
+                  <Link href="/admin/products">
+                    <PackagePlus className="h-5 w-5 text-yellow-400" />
+                    <span className="text-sm font-medium text-white">Manage Products</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="default" className="h-auto flex-col gap-2 border-zinc-800 py-6 hover:bg-zinc-900">
+                  <Link href="/admin/suppliers">
+                    <Truck className="h-5 w-5 text-purple-400" />
+                    <span className="text-sm font-medium text-white">Manage Suppliers</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="default" className="h-auto flex-col gap-2 border-zinc-800 py-6 hover:bg-zinc-900">
+                  <Link href="/admin/stores">
+                    <Building2 className="h-5 w-5 text-green-400" />
+                    <span className="text-sm font-medium text-white">Manage Stores</span>
+                  </Link>
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            {/* System Overview */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* System Status */}
+              <Card className="border-zinc-800 bg-zinc-950/80">
+                <CardHeader>
+                  <CardTitle className="text-white">System Status</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
+                        <Users className="h-5 w-5 text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white">User Management</p>
+                        <p className="text-xs text-zinc-400">All systems operational</p>
+                      </div>
+                    </div>
+                    <span className="flex h-2 w-2 rounded-full bg-green-400"></span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
+                        <Package className="h-5 w-5 text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white">Product Catalog</p>
+                        <p className="text-xs text-zinc-400">All systems operational</p>
+                      </div>
+                    </div>
+                    <span className="flex h-2 w-2 rounded-full bg-green-400"></span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
+                        <Store className="h-5 w-5 text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white">Store Network</p>
+                        <p className="text-xs text-zinc-400">All systems operational</p>
+                      </div>
+                    </div>
+                    <span className="flex h-2 w-2 rounded-full bg-green-400"></span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card className="border-zinc-800 bg-zinc-950/80">
+                <CardHeader>
+                  <CardTitle className="text-white">Quick Overview</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-400">Active Users</span>
+                    <span className="text-lg font-semibold text-white">{stats?.totalUsers || 0}</span>
+                  </div>
+                  <div className="h-px bg-zinc-800"></div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-400">Total Products</span>
+                    <span className="text-lg font-semibold text-white">{stats?.totalProducts || 0}</span>
+                  </div>
+                  <div className="h-px bg-zinc-800"></div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-400">Active Suppliers</span>
+                    <span className="text-lg font-semibold text-white">{stats?.totalSuppliers || 0}</span>
+                  </div>
+                  <div className="h-px bg-zinc-800"></div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-400">Registered Stores</span>
+                    <span className="text-lg font-semibold text-white">{stats?.totalStores || 0}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
