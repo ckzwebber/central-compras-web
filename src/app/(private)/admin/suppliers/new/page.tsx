@@ -47,23 +47,12 @@ export default function NewSupplierPage() {
       const formData = new FormData(e.currentTarget);
       const selectedUserId = formData.get("usuario_id") as string;
 
-      let endereco_id: string | undefined = undefined;
-
-      // If user is selected, get their endereco_id
-      if (selectedUserId) {
-        const selectedUser = users.find((u) => u.id === selectedUserId);
-        if (selectedUser?.endereco_id) {
-          endereco_id = selectedUser.endereco_id;
-        }
-      }
-
       const supplierData: adminSuppliersService.CreateSupplierData = {
         razao_social: formData.get("razaoSocial") as string,
         nome_fantasia: formData.get("nomeFantasia") as string,
         cnpj: formData.get("cnpj") as string,
         descricao: (formData.get("descricao") as string) || undefined,
         usuario_id: selectedUserId || undefined,
-        endereco_id: endereco_id,
       };
 
       await adminSuppliersService.adminSuppliersService.createSupplier(supplierData);

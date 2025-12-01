@@ -2,43 +2,45 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, X } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import { supplierService } from "@/lib/supplier.service";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormSection } from "@/components/admin/form-section";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function NewSupplierProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-  };
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const formData = new FormData(e.currentTarget);
 
-    router.push("/supplier/products");
+      const productData = {
+        nome: formData.get("nome") as string,
+        descricao: formData.get("descricao") as string,
+        categoria: formData.get("categoria") as string,
+        valor_unitario: parseFloat(formData.get("valorUnitario") as string),
+        quantidade_estoque: parseInt(formData.get("estoque") as string),
+        imagem_url: formData.get("imagem_url") as string,
+      };
+
+      await supplierService.createProduct(productData);
+      router.push("/supplier/products");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create product");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -57,9 +59,16 @@ export default function NewSupplierProductPage() {
           <p className="text-sm text-zinc-400">Add a new product to your catalog.</p>
         </div>
 
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <FormSection title="Basic Information" description="Main product details">
             <div className="space-y-2">
               <Label htmlFor="nome">Product Name</Label>
@@ -76,6 +85,11 @@ export default function NewSupplierProductPage() {
                 rows={3}
                 className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 transition placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="imagem_url">Image URL</Label>
+              <Input id="imagem_url" name="imagem_url" type="url" placeholder="https://example.com/image.jpg" className="border-zinc-800 bg-zinc-950" />
             </div>
 
             <div className="space-y-2">
@@ -110,45 +124,20 @@ export default function NewSupplierProductPage() {
             </div>
           </FormSection>
 
-          {/* Product Image */}
-          <FormSection title="Product Image" description="Upload a product image (optional)">
-            {selectedImage ? (
-              <div className="relative">
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
-                  <Image src={selectedImage} alt="Product preview" fill className="object-contain" />
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRemoveImage}
-                  className="absolute right-2 top-2 h-8 w-8 border border-zinc-800 bg-zinc-950 text-zinc-300 hover:bg-zinc-900 hover:text-white">
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-zinc-800 bg-zinc-900/50 p-12 transition hover:border-zinc-700">
-                <div className="text-center">
-                  <Upload className="mx-auto h-12 w-12 text-zinc-600" />
-                  <div className="mt-4">
-                    <label htmlFor="image-upload" className="cursor-pointer text-sm font-medium text-white hover:text-zinc-200">
-                      Click to upload
-                      <input id="image-upload" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                    </label>
-                    <p className="mt-1 text-xs text-zinc-500">PNG, JPG, GIF up to 10MB</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </FormSection>
-
           {/* Actions */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="default" onClick={() => router.push("/supplier/products")} className="text-zinc-300 hover:text-white">
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Registering..." : "Register Product"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Register Product"
+              )}
             </Button>
           </div>
         </form>

@@ -1,21 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Edit, Trash2, Loader2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-interface CommercialTerm {
-  id: string;
-  estado: string;
-  cashback: number;
-  prazoPagamento: number;
-  acrescimo: number;
-}
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { supplierService, type SupplierTerm } from "@/lib/supplier.service";
 
 const brazilianStates = [
   { uf: "AC", name: "Acre" },
@@ -47,17 +42,33 @@ const brazilianStates = [
   { uf: "TO", name: "Tocantins" },
 ];
 
-const mockTerms: CommercialTerm[] = [
-  { id: "1", estado: "SP", cashback: 2.5, prazoPagamento: 30, acrescimo: 0 },
-  { id: "2", estado: "RJ", cashback: 3.0, prazoPagamento: 45, acrescimo: 50 },
-  { id: "3", estado: "MG", cashback: 2.0, prazoPagamento: 30, acrescimo: 0 },
-];
-
 export default function SupplierTermsPage() {
-  const [terms, setTerms] = useState<CommercialTerm[]>(mockTerms);
+  const [terms, setTerms] = useState<SupplierTerm[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTerm, setEditingTerm] = useState<CommercialTerm | null>(null);
+  const [editingTerm, setEditingTerm] = useState<SupplierTerm | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [termToDelete, setTermToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchTerms();
+  }, []);
+
+  const fetchTerms = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await supplierService.getTerms();
+      setTerms(data.data);
+    } catch (err: any) {
+      if (err.status === 404) return;
+      setError(err instanceof Error ? err.message : "Failed to load commercial terms");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -70,7 +81,7 @@ export default function SupplierTermsPage() {
     return brazilianStates.find((state) => state.uf === uf)?.name || uf;
   };
 
-  const handleOpenDialog = (term?: CommercialTerm) => {
+  const handleOpenDialog = (term?: SupplierTerm) => {
     if (term) {
       setEditingTerm(term);
     } else {
@@ -87,34 +98,57 @@ export default function SupplierTermsPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const newTerm: CommercialTerm = {
-      id: editingTerm?.id || String(Date.now()),
-      estado: formData.get("estado") as string,
-      cashback: parseFloat(formData.get("cashback") as string),
-      prazoPagamento: parseInt(formData.get("prazoPagamento") as string),
-      acrescimo: parseFloat(formData.get("acrescimo") as string),
-    };
+    try {
+      const formData = new FormData(e.currentTarget);
+      const termData = {
+        estado: formData.get("estado") as string,
+        cashback_porcentagem: parseFloat(formData.get("cashback") as string),
+        prazo_extendido_dias: parseInt(formData.get("prazoPagamento") as string),
+        variacao_unitario: parseFloat(formData.get("acrescimo") as string),
+      };
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (editingTerm) {
+        const updated = await supplierService.updateTerm(editingTerm.id, termData);
+        setTerms(terms.map((t) => (t.id === editingTerm.id ? updated : t)));
+      } else {
+        const created = await supplierService.createTerm(termData);
+        setTerms([...terms, created]);
+      }
 
-    if (editingTerm) {
-      setTerms(terms.map((t) => (t.id === editingTerm.id ? newTerm : t)));
-    } else {
-      setTerms([...terms, newTerm]);
+      handleCloseDialog();
+    } catch (err: any) {
+      console.error("Term save error:", err);
+      setError(err instanceof Error ? err.message : "Failed to save commercial term");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-    handleCloseDialog();
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this commercial term?")) {
+  const handleDelete = async (id: string) => {
+    try {
+      await supplierService.deleteTerm(id);
       setTerms(terms.filter((t) => t.id !== id));
+      setDeleteDialogOpen(false);
+      setTermToDelete(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete commercial term");
     }
   };
+
+  const confirmDelete = (id: string) => {
+    setTermToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -130,6 +164,14 @@ export default function SupplierTermsPage() {
             New Term
           </Button>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Terms List */}
         {terms.length === 0 ? (
@@ -156,7 +198,7 @@ export default function SupplierTermsPage() {
                       <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(term)} className="h-8 w-8 text-zinc-400 hover:text-black">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(term.id)} className="h-8 w-8 text-zinc-400 hover:text-red-400">
+                      <Button variant="ghost" size="icon" onClick={() => confirmDelete(term.id)} className="h-8 w-8 text-zinc-400 hover:text-red-400">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -165,17 +207,17 @@ export default function SupplierTermsPage() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-zinc-400">Cashback:</span>
-                    <span className="font-semibold text-green-400">{term.cashback}%</span>
+                    <span className="font-semibold text-green-400">{term.cashback_porcentagem}%</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-zinc-400">Payment Term:</span>
-                    <span className="font-medium text-white">{term.prazoPagamento} days</span>
+                    <span className="font-medium text-white">{term.prazo_extendido_dias} days</span>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-zinc-800 pt-3 text-sm">
-                    <span className="text-zinc-400">Additional Fee:</span>
-                    <span className="font-medium text-white">{formatCurrency(term.acrescimo)}</span>
+                    <span className="text-zinc-400">Price Variation:</span>
+                    <span className="font-medium text-white">{formatCurrency(term.variacao_unitario)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -213,19 +255,19 @@ export default function SupplierTermsPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="cashback">Cashback (%)</Label>
-                <Input id="cashback" name="cashback" type="number" step="0.01" min="0" max="100" placeholder="0.00" required defaultValue={editingTerm?.cashback} className="border-zinc-800 bg-zinc-950" />
+                <Input id="cashback" name="cashback" type="number" step="0.01" min="0" max="100" placeholder="0.00" required defaultValue={editingTerm?.cashback_porcentagem} className="border-zinc-800 bg-zinc-950" />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="prazoPagamento">Payment Term (days)</Label>
-                <Input id="prazoPagamento" name="prazoPagamento" type="number" min="0" placeholder="0" required defaultValue={editingTerm?.prazoPagamento} className="border-zinc-800 bg-zinc-950" />
+                <Label htmlFor="prazoPagamento">Extended Term (days)</Label>
+                <Input id="prazoPagamento" name="prazoPagamento" type="number" min="0" placeholder="0" required defaultValue={editingTerm?.prazo_extendido_dias} className="border-zinc-800 bg-zinc-950" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="acrescimo">Additional Fee (BRL)</Label>
-              <Input id="acrescimo" name="acrescimo" type="number" step="0.01" min="0" placeholder="0.00" required defaultValue={editingTerm?.acrescimo} className="border-zinc-800 bg-zinc-950" />
-              <p className="text-xs text-zinc-500">Additional fee per unit (if applicable)</p>
+              <Label htmlFor="acrescimo">Price Variation (BRL)</Label>
+              <Input id="acrescimo" name="acrescimo" type="number" step="0.01" placeholder="0.00" required defaultValue={editingTerm?.variacao_unitario} className="border-zinc-800 bg-zinc-950" />
+              <p className="text-xs text-zinc-500">Price variation per unit for this state</p>
             </div>
 
             <DialogFooter>
@@ -239,6 +281,22 @@ export default function SupplierTermsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="border-zinc-800 bg-zinc-950">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Commercial Term</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">Are you sure you want to delete this commercial term? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => termToDelete && handleDelete(termToDelete)} className="bg-red-600 text-white hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
