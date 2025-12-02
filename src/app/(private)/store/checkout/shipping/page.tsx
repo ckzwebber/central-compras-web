@@ -36,14 +36,14 @@ export default function ShippingPage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
+
     if (checkoutData) {
       setCheckoutData({
         ...checkoutData,
         shippingMethod: selectedShipping,
       });
     }
-    
+
     router.push("/store/checkout/payment");
   };
 
@@ -105,7 +105,8 @@ export default function ShippingPage() {
                   </Link>
                 </div>
                 <p className="text-sm text-zinc-200">
-                  {checkoutData.firstName} {checkoutData.lastName}, {checkoutData.address}{checkoutData.apartment && `, ${checkoutData.apartment}`}, {checkoutData.city}, {checkoutData.state} {checkoutData.postalCode}, {checkoutData.country}
+                  {checkoutData.firstName} {checkoutData.lastName}, {checkoutData.address}
+                  {checkoutData.apartment && `, ${checkoutData.apartment}`}, {checkoutData.city}, {checkoutData.state} {checkoutData.postalCode}, {checkoutData.country}
                 </p>
               </section>
 

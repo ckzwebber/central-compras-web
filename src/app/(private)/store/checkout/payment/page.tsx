@@ -101,9 +101,7 @@ export default function PaymentPage() {
     return null;
   }
 
-  const shippingMethodText = checkoutData.shippingMethod === "standard" 
-    ? "Standard (2-4 business days)" 
-    : "Economy (7-10 business days)";
+  const shippingMethodText = checkoutData.shippingMethod === "standard" ? "Standard (2-4 business days)" : "Economy (7-10 business days)";
 
   return (
     <main className="bg-zinc-950 text-zinc-100">
@@ -180,7 +178,8 @@ export default function PaymentPage() {
                   </Link>
                 </div>
                 <p className="text-sm text-zinc-200">
-                  {checkoutData.firstName} {checkoutData.lastName}, {checkoutData.address}{checkoutData.apartment && `, ${checkoutData.apartment}`}, {checkoutData.city}, {checkoutData.state} {checkoutData.postalCode}, {checkoutData.country}
+                  {checkoutData.firstName} {checkoutData.lastName}, {checkoutData.address}
+                  {checkoutData.apartment && `, ${checkoutData.apartment}`}, {checkoutData.city}, {checkoutData.state} {checkoutData.postalCode}, {checkoutData.country}
                 </p>
               </section>
 
@@ -316,8 +315,10 @@ export default function PaymentPage() {
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Order completed
                     </>
+                  ) : selectedPayment === "pix" ? (
+                    "Generate PIX Code"
                   ) : (
-                    selectedPayment === "pix" ? "Generate PIX Code" : "Complete order"
+                    "Complete order"
                   )}
                 </Button>
               </div>
