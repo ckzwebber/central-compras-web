@@ -81,7 +81,7 @@ export interface UpdateCampaignData {
 
 export interface SupplierTerm {
   id: string;
-  estado: string;
+  uf: string;
   cashback_porcentagem: number;
   prazo_extendido_dias: number;
   variacao_unitario: number;
@@ -90,7 +90,7 @@ export interface SupplierTerm {
 }
 
 export interface CreateTermData {
-  estado: string;
+  uf: string;
   cashback_porcentagem: number;
   prazo_extendido_dias: number;
   variacao_unitario: number;

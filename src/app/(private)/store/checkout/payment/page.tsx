@@ -1,9 +1,10 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import Link from "next/link";
-import { ArrowLeft, CreditCard } from "lucide-react";
+import { ArrowLeft, CreditCard, Loader2 } from "lucide-react";
 import { SiWolframlanguage } from "react-icons/si";
 import { FaPix } from "react-icons/fa6";
 
@@ -13,37 +14,96 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { OrderSummary } from "@/components/order-summary";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import useCart from "@/hooks/states/use-cart";
+import useCheckout from "@/hooks/states/use-checkout";
+import { pedidosService } from "@/lib/pedidos";
+import type { CreatePedidoDto } from "@/types/pedido";
 
 type PaymentMethod = "pix" | "card";
 
 export default function PaymentPage() {
-  const { cart } = useCart();
+  const router = useRouter();
+  const { cart, clearCart } = useCart();
+  const { checkoutData, clearCheckoutData } = useCheckout();
   const cartItems = cart?.produtos ?? [];
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("card");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const subtotal = useMemo(() => cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0), [cartItems]);
 
-  // Mock shipping cost - In real app, this would come from previous step
-  const shippingCost = 24.99;
+  const shippingCost = checkoutData?.shippingMethod === "standard" ? 39.99 : 24.99;
   const total = subtotal + shippingCost;
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // TODO: Integrate with payment gateway (Stripe, etc.)
+    setError(null);
+    setLoading(true);
+
+    try {
+      // Validar se há itens no carrinho
+      if (cartItems.length === 0) {
+        throw new Error("Carrinho vazio");
+      }
+
+      // Agrupar produtos por fornecedor
+      const produtosPorFornecedor = cartItems.reduce((acc, item) => {
+        const fornecedor_id = item.fornecedor_id;
+        if (!acc[fornecedor_id]) {
+          acc[fornecedor_id] = [];
+        }
+        acc[fornecedor_id].push({
+          produto_id: item.id,
+          quantidade: item.quantidade,
+          valor_unitario: item.valor_unitario,
+        });
+        return acc;
+      }, {} as Record<string, { produto_id: string; quantidade: number; valor_unitario: number }[]>);
+
+      // Criar um pedido para cada fornecedor
+      const pedidosCriados = [];
+      for (const [fornecedor_id, produtos] of Object.entries(produtosPorFornecedor)) {
+        const pedidoData: CreatePedidoDto = {
+          loja_id: fornecedor_id,
+          descricao: `Pedido via checkout - ${produtos.length} produto(s)`,
+          forma_pagamento: selectedPayment === "pix" ? "pix" : "cartao_credito",
+          prazo_dias: 7, // Prazo padrão de 7 dias
+          produtos: produtos,
+        };
+
+        const pedido = await pedidosService.create(pedidoData);
+        pedidosCriados.push(pedido);
+      }
+
+      // Limpar carrinho e dados do checkout após sucesso
+      clearCart();
+      clearCheckoutData();
+      setSuccess(true);
+
+      // Redirecionar para página de sucesso após 2 segundos
+      setTimeout(() => {
+        router.push("/store/orders");
+      }, 2000);
+    } catch (err: any) {
+      console.error("❌ Erro ao criar pedido:", err);
+      setError(err.message || "Erro ao processar pedido. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Mock data - In real app, this would come from the previous steps or state management
-  const userContact = "you@example.com";
-  const shippingAddress = {
-    name: "Maria Silva",
-    address: "Rua Exemplo, 123",
-    city: "São Paulo",
-    state: "SP",
-    postalCode: "00000-000",
-    country: "Brazil",
-  };
-  const shippingMethod = "Economy (7-10 business days)";
+  // Redirect if no checkout data
+  if (!checkoutData) {
+    router.push("/store/checkout");
+    return null;
+  }
+
+  const shippingMethodText = checkoutData.shippingMethod === "standard" 
+    ? "Standard (2-4 business days)" 
+    : "Economy (7-10 business days)";
 
   return (
     <main className="bg-zinc-950 text-zinc-100">
@@ -63,13 +123,13 @@ export default function PaymentPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="text-zinc-200" />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/checkout" className="text-zinc-200 transition hover:text-white">
+                  <BreadcrumbLink href="/store/checkout" className="text-zinc-200 transition hover:text-white">
                     Information
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="text-zinc-200" />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/checkout/shipping" className="text-zinc-200 transition hover:text-white">
+                  <BreadcrumbLink href="/store/checkout/shipping" className="text-zinc-200 transition hover:text-white">
                     Shipping
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -84,16 +144,31 @@ export default function PaymentPage() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(320px,1fr)] lg:items-start">
           <section className="space-y-6">
+            {/* Mensagens de Erro e Sucesso */}
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert className="border-green-500 bg-green-500/10 text-green-500">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>Pedido criado com sucesso! Redirecionando...</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-7">
               {/* Contact Information Display */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Contact</h3>
-                  <Link href="/checkout" className="text-sm font-medium text-zinc-500 hover:underline">
+                  <Link href="/store/checkout" className="text-sm font-medium text-zinc-500 hover:underline">
                     Change
                   </Link>
                 </div>
-                <p className="text-sm text-zinc-200">{userContact}</p>
+                <p className="text-sm text-zinc-200">{checkoutData.email}</p>
               </section>
 
               {/* Shipping Address Display */}
@@ -105,7 +180,7 @@ export default function PaymentPage() {
                   </Link>
                 </div>
                 <p className="text-sm text-zinc-200">
-                  {shippingAddress.name}, {shippingAddress.address}, {shippingAddress.city}, {shippingAddress.state} {shippingAddress.postalCode}, {shippingAddress.country}
+                  {checkoutData.firstName} {checkoutData.lastName}, {checkoutData.address}{checkoutData.apartment && `, ${checkoutData.apartment}`}, {checkoutData.city}, {checkoutData.state} {checkoutData.postalCode}, {checkoutData.country}
                 </p>
               </section>
 
@@ -117,7 +192,7 @@ export default function PaymentPage() {
                     Change
                   </Link>
                 </div>
-                <p className="text-sm text-zinc-200">{shippingMethod}</p>
+                <p className="text-sm text-zinc-200">{shippingMethodText}</p>
               </section>
 
               {/* Payment Method Selection */}
@@ -224,14 +299,26 @@ export default function PaymentPage() {
               </section>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Button asChild variant="link" className="group gap-2 px-0 text-sm text-zinc-300 hover:text-white">
+                <Button asChild variant="link" className="group gap-2 px-0 text-sm text-zinc-300 hover:text-white" disabled={loading || success}>
                   <Link href="/checkout/shipping">
                     <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
                     Return to shipping
                   </Link>
                 </Button>
-                <Button type="submit" className="w-full sm:w-auto">
-                  {selectedPayment === "pix" ? "Generate PIX Code" : "Complete order"}
+                <Button type="submit" className="w-full sm:w-auto" disabled={loading || success || cartItems.length === 0}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : success ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Order completed
+                    </>
+                  ) : (
+                    selectedPayment === "pix" ? "Generate PIX Code" : "Complete order"
+                  )}
                 </Button>
               </div>
             </form>

@@ -103,7 +103,7 @@ export default function SupplierTermsPage() {
     try {
       const formData = new FormData(e.currentTarget);
       const termData = {
-        estado: formData.get("estado") as string,
+        uf: formData.get("uf") as string,
         cashback_porcentagem: parseFloat(formData.get("cashback") as string),
         prazo_extendido_dias: parseInt(formData.get("prazoPagamento") as string),
         variacao_unitario: parseFloat(formData.get("acrescimo") as string),
@@ -191,8 +191,8 @@ export default function SupplierTermsPage() {
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-lg text-white">{term.estado}</CardTitle>
-                      <p className="text-sm text-zinc-400">{getStateName(term.estado)}</p>
+                      <CardTitle className="text-lg text-white">{term.uf}</CardTitle>
+                      <p className="text-sm text-zinc-400">{getStateName(term.uf)}</p>
                     </div>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(term)} className="h-8 w-8 text-zinc-400 hover:text-black">
@@ -236,12 +236,12 @@ export default function SupplierTermsPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="estado">State (UF)</Label>
+              <Label htmlFor="uf">State (UF)</Label>
               <select
-                id="estado"
-                name="estado"
+                id="uf"
+                name="uf"
                 required
-                defaultValue={editingTerm?.estado || ""}
+                defaultValue={editingTerm?.uf || ""}
                 className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-200 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40">
                 <option value="">Select a state</option>
                 {brazilianStates.map((state) => (

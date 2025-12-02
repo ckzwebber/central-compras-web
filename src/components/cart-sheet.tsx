@@ -101,7 +101,7 @@ export const CartSheet = forwardRef((_, ref) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              window.location.href = "/checkout";
+              window.location.href = "/store/checkout";
             }}>
             Proceed to Checkout
           </Button>

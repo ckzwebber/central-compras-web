@@ -1,10 +1,9 @@
 "use client";
 
-import { FormEvent, useMemo } from "react";
+import { FormEvent, useMemo, useEffect, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { SiWolframlanguage } from "react-icons/si";
 
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -14,20 +13,69 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { OrderSummary } from "@/components/order-summary";
 import useCart from "@/hooks/states/use-cart";
+import useCheckout from "@/hooks/states/use-checkout";
+import { authService } from "@/lib/auth";
+import { lojasService } from "@/lib/lojas";
+import { enderecosService, type Endereco } from "@/lib/enderecos";
+import type { User } from "@/types/auth";
+import { ArrowLeft } from "lucide-react";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart } = useCart();
+  const { checkoutData, setCheckoutData } = useCheckout();
   const cartItems = cart?.produtos ?? [];
+  const [user, setUser] = useState<User | null>(null);
+  const [endereco, setEndereco] = useState<Endereco | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const subtotal = useMemo(() => cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0), [cartItems]);
 
   const total = cart?.total ?? subtotal;
 
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const currentUser = authService.getUser();
+        setUser(currentUser);
+
+        if (currentUser?.sub) {
+          const lojas = await lojasService.getMinhasLojas();
+          if (lojas && lojas.length > 0 && lojas[0].endereco_id) {
+            const enderecoData = await enderecosService.getById(lojas[0].endereco_id);
+            setEndereco(enderecoData);
+            console.log(enderecoData.estado);
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, []);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // TODO: Save form data to state/context
-    router.push("/checkout/shipping");
+    const formData = new FormData(event.currentTarget);
+
+    const data = {
+      email: formData.get("email") as string,
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      address: formData.get("address") as string,
+      apartment: formData.get("apartment") as string,
+      city: formData.get("city") as string,
+      state: formData.get("state") as string,
+      postalCode: formData.get("postalCode") as string,
+      phone: formData.get("phone") as string,
+      country: formData.get("country") as string,
+    };
+
+    setCheckoutData(data);
+    router.push("/store/checkout/shipping");
   };
 
   return (
@@ -67,19 +115,14 @@ export default function CheckoutPage() {
           <section className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-7">
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h2 className="text-lg font-semibold">Contact information</h2>
-                    <p className="text-sm text-zinc-400">We&apos;ll use these details to keep you updated about your order.</p>
-                  </div>
-                  <Link href="/login" className="text-sm font-medium hover:underline text-zinc-500">
-                    Log in
-                  </Link>
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold">Contact information</h2>
+                  <p className="text-sm text-zinc-400">We&apos;ll use these details to keep you updated about your order.</p>
                 </div>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email address</Label>
-                    <Input className="border-zinc-800" id="email" name="email" type="email" placeholder="you@example.com" required autoComplete="email" />
+                    <Input className="border-zinc-800" id="email" name="email" type="email" placeholder="you@example.com" defaultValue={checkoutData?.email || user?.email || ""} required autoComplete="email" />
                   </div>
                 </div>
               </section>
@@ -102,28 +145,36 @@ export default function CheckoutPage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First name</Label>
-                      <Input className="border-zinc-800" id="firstName" name="firstName" autoComplete="given-name" placeholder="Maria" required />
+                      <Input className="border-zinc-800" id="firstName" name="firstName" autoComplete="given-name" placeholder="Maria" defaultValue={checkoutData?.firstName || user?.nome || ""} required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last name</Label>
-                      <Input className="border-zinc-800" id="lastName" name="lastName" autoComplete="family-name" placeholder="Silva" required />
+                      <Input className="border-zinc-800" id="lastName" name="lastName" autoComplete="family-name" placeholder="Silva" defaultValue={checkoutData?.lastName || user?.sobrenome || ""} required />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
-                    <Input className="border-zinc-800" id="address" name="address" autoComplete="street-address" placeholder="Rua Exemplo, 123" required />
+                    <Input
+                      className="border-zinc-800"
+                      id="address"
+                      name="address"
+                      autoComplete="street-address"
+                      placeholder="Rua Exemplo, 123"
+                      defaultValue={checkoutData?.address || (endereco ? `${endereco.rua}, ${endereco.numero}` : "")}
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
-                    <Input className="border-zinc-800" id="apartment" name="apartment" autoComplete="address-line2" placeholder="Apto 45" />
+                    <Input className="border-zinc-800" id="apartment" name="apartment" autoComplete="address-line2" placeholder="Apto 45" defaultValue={checkoutData?.apartment || endereco?.complemento || ""} />
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="city">City</Label>
-                      <Input className="border-zinc-800" id="city" name="city" autoComplete="address-level2" placeholder="São Paulo" required />
+                      <Input className="border-zinc-800" id="city" name="city" autoComplete="address-level2" placeholder="São Paulo" defaultValue={checkoutData?.city || endereco?.cidade || ""} required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="state">State</Label>
@@ -131,7 +182,7 @@ export default function CheckoutPage() {
                         id="state"
                         name="state"
                         className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-200 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        defaultValue="SP">
+                        defaultValue={checkoutData?.state || endereco?.estado || "SP"}>
                         <option value="AC">Acre</option>
                         <option value="AL">Alagoas</option>
                         <option value="AP">Amapá</option>
@@ -166,11 +217,11 @@ export default function CheckoutPage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="postalCode">Postal code</Label>
-                      <Input className="border-zinc-800" id="postalCode" name="postalCode" autoComplete="postal-code" placeholder="00000-000" required />
+                      <Input className="border-zinc-800" id="postalCode" name="postalCode" autoComplete="postal-code" placeholder="00000-000" defaultValue={checkoutData?.postalCode || endereco?.cep || ""} required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone</Label>
-                      <Input className="border-zinc-800" id="phone" name="phone" type="tel" autoComplete="tel" placeholder="(11) 99999-9999" />
+                      <Input className="border-zinc-800" id="phone" name="phone" type="tel" autoComplete="tel" placeholder="(11) 99999-9999" defaultValue={checkoutData?.phone || ""} />
                     </div>
                   </div>
                 </div>

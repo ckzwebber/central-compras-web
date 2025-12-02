@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 
 interface OrderSummaryItem {
   id: string;
@@ -90,10 +91,10 @@ export function OrderSummary({ items, subtotal, shippingCost = null, shippingLab
       <div className="rounded-xl bg-zinc-950/80 px-5 py-4 text-sm text-zinc-400">
         <p className="font-medium text-white">Need help?</p>
         <p className="mt-2">
-          Contact our support team at
-          <a href="mailto:support@example.com" className="text-zinc-500 ml-2 hover:underline">
-            support@example.com
-          </a>
+          Contact our support team{" "}
+          <Link href="/contact" className="hover:text-white hover:underline">
+            here
+          </Link>
           .
         </p>
       </div>

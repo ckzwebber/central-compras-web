@@ -12,14 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { OrderSummary } from "@/components/order-summary";
 import useCart from "@/hooks/states/use-cart";
+import useCheckout from "@/hooks/states/use-checkout";
 
 type ShippingMethod = "economy" | "standard";
 
 export default function ShippingPage() {
   const router = useRouter();
   const { cart } = useCart();
+  const { checkoutData, setCheckoutData } = useCheckout();
   const cartItems = cart?.produtos ?? [];
-  const [selectedShipping, setSelectedShipping] = useState<ShippingMethod>("economy");
+  const [selectedShipping, setSelectedShipping] = useState<ShippingMethod>(checkoutData?.shippingMethod || "economy");
 
   const subtotal = useMemo(() => cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0), [cartItems]);
 
@@ -34,19 +36,15 @@ export default function ShippingPage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // TODO: Save shipping method to state/context
-    router.push("/checkout/payment");
-  };
-
-  // Mock data - In real app, this would come from the previous step or state management
-  const userContact = "you@example.com";
-  const shippingAddress = {
-    name: "Maria Silva",
-    address: "Rua Exemplo, 123",
-    city: "São Paulo",
-    state: "SP",
-    postalCode: "00000-000",
-    country: "Brazil",
+    
+    if (checkoutData) {
+      setCheckoutData({
+        ...checkoutData,
+        shippingMethod: selectedShipping,
+      });
+    }
+    
+    router.push("/store/checkout/payment");
   };
 
   return (
@@ -67,7 +65,7 @@ export default function ShippingPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="text-zinc-200" />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/checkout" className="text-zinc-200 transition hover:text-white">
+                  <BreadcrumbLink href="/store/checkout" className="text-zinc-200 transition hover:text-white">
                     Information
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -91,23 +89,23 @@ export default function ShippingPage() {
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Contact</h3>
-                  <Link href="/checkout" className="text-sm font-medium text-zinc-500 hover:underline">
+                  <Link href="/store/checkout" className="text-sm font-medium text-zinc-500 hover:underline">
                     Change
                   </Link>
                 </div>
-                <p className="text-sm text-zinc-200">{userContact}</p>
+                <p className="text-sm text-zinc-200">{checkoutData.email}</p>
               </section>
 
               {/* Shipping Address Display */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Ship to</h3>
-                  <Link href="/checkout" className="text-sm font-medium text-zinc-500 hover:underline">
+                  <Link href="/store/checkout" className="text-sm font-medium text-zinc-500 hover:underline">
                     Change
                   </Link>
                 </div>
                 <p className="text-sm text-zinc-200">
-                  {shippingAddress.name}, {shippingAddress.address}, {shippingAddress.city}, {shippingAddress.state} {shippingAddress.postalCode}, {shippingAddress.country}
+                  {checkoutData.firstName} {checkoutData.lastName}, {checkoutData.address}{checkoutData.apartment && `, ${checkoutData.apartment}`}, {checkoutData.city}, {checkoutData.state} {checkoutData.postalCode}, {checkoutData.country}
                 </p>
               </section>
 
@@ -168,7 +166,7 @@ export default function ShippingPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button asChild variant="link" className="group gap-2 px-0 text-sm text-zinc-300 hover:text-white">
-                  <Link href="/checkout">
+                  <Link href="/store/checkout">
                     <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
                     Return to information
                   </Link>
