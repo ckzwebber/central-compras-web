@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormSection } from "@/components/admin/form-section";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { adminService, type CreateUserData } from "@/lib/admin.service";
+import { adminService } from "@/lib/admin.service";
+import type { CreateUserData } from "@/types/user";
 import { adminAddressesService } from "@/lib/admin-addresses.service";
 
 export default function NewUserPage() {
@@ -52,7 +53,6 @@ export default function NewUserPage() {
       await adminService.createUser(userData);
       router.push("/admin/users");
     } catch (err: any) {
-      console.log(err);
       setError(err.response.data.message ? err.response.data.message : "Failed to create user");
     } finally {
       setIsSubmitting(false);
@@ -62,7 +62,6 @@ export default function NewUserPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto max-w-4xl px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <Button asChild variant="link" className="group mb-4 gap-2 px-0 text-sm text-zinc-300 hover:text-white">
             <Link href="/admin/users">
@@ -75,7 +74,6 @@ export default function NewUserPage() {
           <p className="text-sm text-zinc-400">Register a new user in the system.</p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -83,9 +81,7 @@ export default function NewUserPage() {
           </Alert>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
           <FormSection title="Personal Information" description="Basic user details">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -136,7 +132,6 @@ export default function NewUserPage() {
             </div>
           </FormSection>
 
-          {/* Address Information */}
           <FormSection title="Address" description="User location details">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -210,7 +205,6 @@ export default function NewUserPage() {
             </div>
           </FormSection>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="default" onClick={() => router.push("/admin/users")} className="text-zinc-300 hover:text-white">
               Cancel

@@ -2,7 +2,7 @@
 
 import { LayoutDashboard, Package, ShoppingCart, Megaphone, FileText, User, Home } from "lucide-react";
 import { DashboardSidebar, NavigationItem } from "@/components/dashboard-sidebar";
-import { authService } from "@/lib/auth";
+import { authService } from "@/lib/auth.service";
 import { useState, useEffect } from "react";
 
 const navigation: NavigationItem[] = [

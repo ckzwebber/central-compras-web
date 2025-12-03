@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-// SEO Metadata
 export const metadata: Metadata = {
   title: "Privacy Policy | Guri's Store",
   description: "Learn how Guri's Store collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for B2B marketplace users.",
@@ -19,14 +18,12 @@ export default function PrivacyPage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-4 py-12">
         <div className="mx-auto max-w-4xl">
-          {/* Logo */}
           <div className="mb-8 flex justify-center">
             <Link href="/" className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-black shadow-lg transition-transform hover:scale-105">
               <SiWolframlanguage size={36} className="text-white" />
             </Link>
           </div>
 
-          {/* Privacy Card */}
           <Card className="border-zinc-800 bg-zinc-950/80 shadow-xl">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-3xl font-bold text-white">Privacy Policy</CardTitle>
@@ -34,7 +31,6 @@ export default function PrivacyPage() {
             </CardHeader>
 
             <CardContent className="space-y-8">
-              {/* Introduction */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">1. Introduction</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">
@@ -48,7 +44,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Information Collection */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">2. Information We Collect</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">We collect various types of information to provide and improve our services:</p>
@@ -83,7 +78,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Data Use */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">3. How We Use Your Information</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">We use the collected information for the following purposes:</p>
@@ -114,7 +108,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Data Sharing */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">4. Information Sharing</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">We do not sell your personal information. We may share your data in the following circumstances:</p>
@@ -137,7 +130,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Cookies */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">5. Cookies and Tracking Technologies</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">We use cookies and similar technologies to enhance your experience on our platform:</p>
@@ -157,7 +149,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Data Security */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">6. Data Storage and Security</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">We implement robust security measures to protect your information:</p>
@@ -175,7 +166,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* User Rights */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">7. Your Rights</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">You have the following rights regarding your personal information:</p>
@@ -204,7 +194,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Data Retention */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">8. Data Retention</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">We retain your information for as long as necessary to:</p>
@@ -219,7 +208,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Changes */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">9. Changes to Privacy Policy</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">
@@ -235,7 +223,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Contact */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">10. Contact Information</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">If you have questions or concerns about this Privacy Policy or our data practices, please contact us:</p>
@@ -266,7 +253,6 @@ export default function PrivacyPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Back Button */}
               <div className="flex justify-center pt-4">
                 <Button asChild variant="link" className="gap-2 text-white">
                   <Link href="/">
@@ -278,9 +264,8 @@ export default function PrivacyPage() {
             </CardContent>
           </Card>
 
-          {/* Footer */}
           <div className="mt-8 text-center text-sm text-zinc-500">
-            <p>© 2024 Guri&apos;s Store. All rights reserved.</p>
+            <p>© 2025 Guri&apos;s Store. All rights reserved.</p>
           </div>
         </div>
       </div>

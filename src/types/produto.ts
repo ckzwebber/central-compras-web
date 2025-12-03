@@ -11,9 +11,28 @@ export interface Produto {
   atualizado_em: Date;
 }
 
-// Tipo para resposta da API (padrão DefaultResponseDto do backend)
 export interface ProdutosResponse {
   success: boolean;
   message: string;
   data: Produto[];
+}
+
+export interface CreateProdutoData {
+  nome: string;
+  descricao: string;
+  imagem_url?: string | null;
+  valor_unitario: number;
+  quantidade_estoque: number;
+  fornecedor_id: string;
+  categoria: string;
+}
+
+export interface UpdateProdutoData {
+  nome?: string;
+  descricao?: string;
+  imagem_url?: string | null;
+  valor_unitario?: number;
+  quantidade_estoque?: number;
+  fornecedor_id?: string;
+  categoria?: string;
 }

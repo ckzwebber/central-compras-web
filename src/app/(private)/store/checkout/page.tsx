@@ -14,9 +14,10 @@ import { Separator } from "@/components/ui/separator";
 import { OrderSummary } from "@/components/order-summary";
 import useCart from "@/hooks/states/use-cart";
 import useCheckout from "@/hooks/states/use-checkout";
-import { authService } from "@/lib/auth";
-import { lojasService } from "@/lib/lojas";
-import { enderecosService, type Endereco } from "@/lib/enderecos";
+import { authService } from "@/lib/auth.service";
+import { lojasService } from "@/lib/lojas.service";
+import { enderecosService } from "@/lib/enderecos.service";
+import type { Endereco } from "@/types/endereco";
 import type { User } from "@/types/auth";
 import { ArrowLeft } from "lucide-react";
 
@@ -44,11 +45,9 @@ export default function CheckoutPage() {
           if (lojas && lojas.length > 0 && lojas[0].endereco_id) {
             const enderecoData = await enderecosService.getById(lojas[0].endereco_id);
             setEndereco(enderecoData);
-            console.log(enderecoData.estado);
           }
         }
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
       } finally {
         setLoading(false);
       }

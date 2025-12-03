@@ -28,7 +28,6 @@ export default function AdminDashboard() {
         const data = await adminService.getStatistics();
         setStats(data);
       } catch (err) {
-        console.error("Error loading statistics:", err);
         setError("Failed to load dashboard statistics");
       } finally {
         setIsLoading(false);
@@ -74,7 +73,6 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white">Admin Dashboard</h1>
           <p className="text-sm text-zinc-400">Central Purchasing System Administration</p>
@@ -93,7 +91,6 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <>
-            {/* Stats Grid */}
             <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {statsCards.map((stat) => (
                 <Card key={stat.title} className="border-zinc-800 bg-zinc-950/80">
@@ -109,7 +106,6 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Quick Actions */}
             <div className="mb-8">
               <h2 className="mb-4 text-lg font-semibold text-white">Quick Actions</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -140,9 +136,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* System Overview */}
             <div className="grid gap-6 lg:grid-cols-2">
-              {/* System Status */}
               <Card className="border-zinc-800 bg-zinc-950/80">
                 <CardHeader>
                   <CardTitle className="text-white">System Status</CardTitle>
@@ -189,7 +183,6 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Quick Stats */}
               <Card className="border-zinc-800 bg-zinc-950/80">
                 <CardHeader>
                   <CardTitle className="text-white">Quick Overview</CardTitle>

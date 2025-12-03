@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-// SEO Metadata
 export const metadata: Metadata = {
   title: "Terms of Service | Guri's Store",
   description: "Read the Terms of Service for Guri's Store B2B marketplace platform. Learn about platform usage, user responsibilities, and your rights.",
@@ -19,14 +18,12 @@ export default function TermsPage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-4 py-12">
         <div className="mx-auto max-w-4xl">
-          {/* Logo */}
           <div className="mb-8 flex justify-center">
             <Link href="/" className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-black shadow-lg transition-transform hover:scale-105">
               <SiWolframlanguage size={36} className="text-white" />
             </Link>
           </div>
 
-          {/* Terms Card */}
           <Card className="border-zinc-800 bg-zinc-950/80 shadow-xl">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-3xl font-bold text-white">Terms of Service</CardTitle>
@@ -34,7 +31,6 @@ export default function TermsPage() {
             </CardHeader>
 
             <CardContent className="space-y-8">
-              {/* Introduction */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">1. Introduction</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">
@@ -48,7 +44,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Platform Use */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">2. Platform Use</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">Guri&apos;s Store provides a centralized marketplace for B2B transactions. The platform allows:</p>
@@ -68,7 +63,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Accounts and Credentials */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">3. Accounts and Credentials</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">To access certain features of the platform, you must create an account. You are responsible for:</p>
@@ -83,7 +77,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* User Responsibilities */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">4. User Responsibilities</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">As a user of Guri&apos;s Store, you agree to:</p>
@@ -99,7 +92,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Intellectual Property */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">5. Intellectual Property</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">
@@ -111,7 +103,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Transactions and Payments */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">6. Transactions and Payments</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">All transactions through the platform are subject to the following:</p>
@@ -125,7 +116,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Limitation of Liability */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">7. Limitation of Liability</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">To the maximum extent permitted by law, Guri&apos;s Store shall not be liable for:</p>
@@ -141,7 +131,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Changes to Terms */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">8. Changes to Terms</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">
@@ -153,7 +142,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Contact */}
               <section className="space-y-3">
                 <h2 className="text-xl font-semibold text-white">9. Contact Information</h2>
                 <p className="text-sm leading-relaxed text-zinc-300">If you have any questions about these Terms of Service, please contact us:</p>
@@ -178,7 +166,6 @@ export default function TermsPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Back Button */}
               <div className="flex justify-center pt-4">
                 <Button asChild variant="link" className="gap-2 text-white">
                   <Link href="/">
@@ -190,9 +177,8 @@ export default function TermsPage() {
             </CardContent>
           </Card>
 
-          {/* Footer */}
           <div className="mt-8 text-center text-sm text-zinc-500">
-            <p>© 2024 Guri&apos;s Store. All rights reserved.</p>
+            <p>© 2025 Guri&apos;s Store. All rights reserved.</p>
           </div>
         </div>
       </div>

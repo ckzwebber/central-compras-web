@@ -10,11 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { authService } from "@/lib/auth";
+import { authService } from "@/lib/auth.service";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -58,12 +56,10 @@ export default function LoginPage() {
 
       const targetRoute = roleRoutes[user?.funcao] || "/store";
 
-      // Small delay to ensure cookie is set
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       window.location.href = targetRoute;
     } catch (err) {
-      console.error("🔴 Erro no login:", err);
       setError(err instanceof Error ? err.message : "Invalid email or password. Please try again.");
       setIsLoading(false);
     }

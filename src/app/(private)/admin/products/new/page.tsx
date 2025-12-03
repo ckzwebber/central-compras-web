@@ -12,10 +12,12 @@ import { FormSection } from "@/components/admin/form-section";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import * as adminProductsService from "@/lib/admin-products.service";
 import * as adminSuppliersService from "@/lib/admin-suppliers.service";
+import { Fornecedor } from "@/types/fornecedor";
+import { CreateProdutoData } from "@/types/produto";
 
 export default function NewProductPage() {
   const router = useRouter();
-  const [suppliers, setSuppliers] = useState<adminSuppliersService.Supplier[]>([]);
+  const [suppliers, setSuppliers] = useState<Fornecedor[]>([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function NewProductPage() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    const productData: adminProductsService.CreateProductData = {
+    const productData: CreateProdutoData = {
       nome: formData.get("nome") as string,
       descricao: formData.get("descricao") as string,
       categoria: formData.get("categoria") as string,
@@ -81,7 +83,6 @@ export default function NewProductPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto max-w-4xl px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <Button asChild variant="link" className="group mb-4 gap-2 px-0 text-sm text-zinc-300 hover:text-white">
             <Link href="/admin/products">
@@ -94,7 +95,6 @@ export default function NewProductPage() {
           <p className="text-sm text-zinc-400">Add a new product to the catalog.</p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -102,9 +102,7 @@ export default function NewProductPage() {
           </Alert>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <FormSection title="Basic Information" description="Main product details">
             <div className="space-y-2">
               <Label htmlFor="nome">Product Name</Label>
@@ -163,7 +161,6 @@ export default function NewProductPage() {
             </div>
           </FormSection>
 
-          {/* Pricing & Stock */}
           <FormSection title="Pricing & Stock" description="Product pricing and inventory information">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">

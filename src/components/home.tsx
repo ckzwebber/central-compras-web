@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Produto } from "@/types/produto";
 import { FiltersCard, ProductFilters, defaultFilters } from "./filters-card";
 import { ProductCard } from "./product-card";
-import { produtosService } from "@/lib/produtos";
+import { produtosService } from "@/lib/produtos.service";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -13,7 +13,6 @@ export const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar produtos ao montar o componente
   useEffect(() => {
     const loadProdutos = async () => {
       try {
@@ -22,7 +21,6 @@ export const Home = () => {
         const data = await produtosService.getAll();
         setProdutos(data);
       } catch (err) {
-        console.error("Erro ao carregar produtos:", err);
         setError(err instanceof Error ? err.message : "Erro ao carregar produtos");
       } finally {
         setIsLoading(false);

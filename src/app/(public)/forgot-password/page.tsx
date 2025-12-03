@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { authService } from "@/lib/auth";
+import { authService } from "@/lib/auth.service";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -41,10 +41,8 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Enviar email de recuperação usando o serviço
       await authService.forgotPassword({ email });
 
-      // Mostrar mensagem de sucesso
       setSuccess(true);
       setEmail("");
     } catch (err) {
@@ -58,14 +56,12 @@ export default function ForgotPasswordPage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          {/* Logo */}
           <div className="mb-8 flex justify-center">
             <Link href="/" className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-black shadow-lg transition-transform hover:scale-105">
               <SiWolframlanguage size={36} className="text-white" />
             </Link>
           </div>
 
-          {/* Forgot Password Card */}
           <Card className="border-zinc-800 bg-zinc-950/80 shadow-xl">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold text-white">Reset your password</CardTitle>
@@ -91,7 +87,6 @@ export default function ForgotPasswordPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Error Alert */}
                   {error && (
                     <Alert variant="destructive" className="border-red-900 bg-red-950/50">
                       <AlertCircle className="h-4 w-4" />
@@ -99,7 +94,6 @@ export default function ForgotPasswordPage() {
                     </Alert>
                   )}
 
-                  {/* Email Field */}
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-zinc-300">
                       Email address
@@ -117,7 +111,6 @@ export default function ForgotPasswordPage() {
                     />
                   </div>
 
-                  {/* Submit Button */}
                   <Button type="submit" disabled={isLoading} className="w-full gap-2">
                     {isLoading ? (
                       <>
@@ -129,7 +122,6 @@ export default function ForgotPasswordPage() {
                     )}
                   </Button>
 
-                  {/* Back to Login */}
                   <div className="text-center">
                     <Button asChild variant="link" className="gap-2 text-white">
                       <Link href="/login">
@@ -143,9 +135,8 @@ export default function ForgotPasswordPage() {
             </CardContent>
           </Card>
 
-          {/* Footer */}
           <div className="mt-8 text-center text-sm text-zinc-500">
-            <p>© 2024 Guri&apos;s Store. All rights reserved.</p>
+            <p>© 2025 Guri&apos;s Store. All rights reserved.</p>
           </div>
         </div>
       </div>

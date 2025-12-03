@@ -2,7 +2,6 @@ import { jwtDecode } from "jwt-decode";
 import { MiddlewareConfig, NextRequest, NextResponse } from "next/server";
 import { User } from "./types/auth";
 
-// JWT payload matches User interface directly
 interface TokenDecoded extends User {
   iat: number;
   exp?: number;
@@ -59,7 +58,6 @@ export function middleware(request: NextRequest) {
     try {
       const tokenDecoded: TokenDecoded = jwtDecode(tokenString);
 
-      // Check if token is expired (older than 24 hours)
       if (tokenDecoded.iat * 1000 < Date.now() - 24 * 60 * 60 * 1000) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
@@ -70,10 +68,8 @@ export function middleware(request: NextRequest) {
         return response;
       }
 
-      // Get user role directly from token (not nested in user object)
       const userRole = tokenDecoded.funcao;
 
-      // Map backend roles to route patterns
       const roleToRouteMap: Record<string, RegExp> = {
         admin: protectedRoutesByRole.admin,
         supplier: protectedRoutesByRole.supplier,
@@ -85,7 +81,6 @@ export function middleware(request: NextRequest) {
 
       const allowedRoutePattern = roleToRouteMap[userRole];
 
-      // If user role is not recognized, redirect to login
       if (!allowedRoutePattern) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
@@ -96,7 +91,6 @@ export function middleware(request: NextRequest) {
         return response;
       }
 
-      // Check if current path matches the allowed route pattern for user's role
       if (!allowedRoutePattern.test(path)) {
         const redirectUrl = request.nextUrl.clone();
 
@@ -111,7 +105,6 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(redirectUrl);
       }
     } catch (error) {
-      // If token is invalid, redirect to login
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
 

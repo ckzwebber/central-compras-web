@@ -1,5 +1,4 @@
 export type UserRole = "admin" | "fornecedor" | "loja" | "usuario";
-export type UserStatus = "active" | "inactive";
 
 export interface DefaultResponse<T> {
   success: boolean;
@@ -13,7 +12,6 @@ export interface User {
   sobrenome: string;
   email: string;
   funcao: UserRole;
-  status: UserStatus;
 }
 
 export interface LoginRequest {

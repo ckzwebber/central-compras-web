@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Search, Eye, Package as PackageIcon, Loader2, AlertCircle } from "lucide-react";
-import { supplierService, type SupplierOrder } from "@/lib/supplier.service";
+import { supplierService } from "@/lib/supplier.service";
+import type { SupplierOrder } from "@/types/supplier";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,12 +49,10 @@ export default function SupplierOrdersPage() {
   const filteredOrders = useMemo(() => {
     let filteredOrders = orders;
 
-    // Filter by status
     if (filterStatus !== "all") {
       filteredOrders = filteredOrders.filter((order) => order.status === filterStatus);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filteredOrders = filteredOrders.filter((order) => order.id.toLowerCase().includes(query) || order.loja_nome?.toLowerCase().includes(query));
@@ -82,13 +81,11 @@ export default function SupplierOrdersPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white">Orders</h1>
           <p className="text-sm text-zinc-400">Manage orders from stores</p>
         </div>
 
-        {/* Search & Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -123,14 +120,12 @@ export default function SupplierOrdersPage() {
           </div>
         </div>
 
-        {/* Loading State */}
         {loading && (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
           </div>
         )}
 
-        {/* Error State */}
         {error && !loading && (
           <Alert className="border-red-800 bg-red-950/20">
             <AlertCircle className="h-4 w-4 text-red-400" />
@@ -138,7 +133,6 @@ export default function SupplierOrdersPage() {
           </Alert>
         )}
 
-        {/* Orders List */}
         {!loading && !error && (
           <>
             {filteredOrders.length === 0 ? (
@@ -185,7 +179,6 @@ export default function SupplierOrdersPage() {
         )}
       </div>
 
-      {/* Order Details Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
         <DialogContent className="max-w-2xl border-zinc-800 bg-zinc-950 text-zinc-100">
           <DialogHeader>
@@ -195,7 +188,6 @@ export default function SupplierOrdersPage() {
 
           {selectedOrder && (
             <div className="space-y-6">
-              {/* Order Info */}
               <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <h3 className="mb-2 text-sm font-semibold text-white">Order Information</h3>
                 <div className="space-y-1 text-sm text-zinc-400">
@@ -212,7 +204,6 @@ export default function SupplierOrdersPage() {
                 </div>
               </div>
 
-              {/* Total */}
               <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <span className="text-sm font-medium text-zinc-300">Total Amount:</span>
                 <span className="text-2xl font-bold text-white">{formatCurrency(selectedOrder.valor_total)}</span>

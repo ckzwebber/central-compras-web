@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { pedidosService } from "@/lib/pedidos";
+import { pedidosService } from "@/lib/pedidos.service";
 import { Pedido } from "@/types/pedido";
 
 const statusConfig = {
@@ -24,7 +24,6 @@ export default function StoreOrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar pedidos ao montar o componente
   useEffect(() => {
     const loadPedidos = async () => {
       try {
@@ -33,7 +32,6 @@ export default function StoreOrdersPage() {
         const data = await pedidosService.getMeusPedidos();
         setPedidos(data);
       } catch (err) {
-        console.error("Erro ao carregar pedidos:", err);
         setError(err instanceof Error ? err.message : "Erro ao carregar pedidos");
       } finally {
         setIsLoading(false);
@@ -63,7 +61,6 @@ export default function StoreOrdersPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight text-white">My Orders</h1>
           <p className="text-sm text-zinc-400">Track and manage your purchase orders</p>
@@ -82,7 +79,6 @@ export default function StoreOrdersPage() {
           </div>
         ) : (
           <>
-            {/* Status Filters */}
             <div className="mb-6 flex flex-wrap gap-2">
               <Button
                 variant={statusFilter === "all" ? "default" : "outline"}
@@ -103,7 +99,6 @@ export default function StoreOrdersPage() {
               ))}
             </div>
 
-            {/* Orders List */}
             {filteredOrders.length === 0 ? (
               <Card className="border-zinc-800 bg-zinc-950/80">
                 <CardContent className="flex flex-col items-center justify-center py-16">
@@ -173,7 +168,6 @@ export default function StoreOrdersPage() {
         )}
       </div>
 
-      {/* Order Details Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
         <DialogContent className="max-w-2xl border-zinc-800 bg-zinc-950 text-zinc-100">
           <DialogHeader>
@@ -185,7 +179,6 @@ export default function StoreOrdersPage() {
 
           {selectedOrder && (
             <div className="space-y-6">
-              {/* Order Info */}
               <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -198,7 +191,6 @@ export default function StoreOrdersPage() {
                 </div>
               </div>
 
-              {/* Products */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-white">Products</h3>
                 <div className="space-y-3">
@@ -222,7 +214,6 @@ export default function StoreOrdersPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Order Details */}
               <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <h3 className="mb-3 text-sm font-semibold text-white">Order Information</h3>
                 <div className="space-y-2 text-sm">
@@ -259,7 +250,6 @@ export default function StoreOrdersPage() {
                 </div>
               </div>
 
-              {/* Total */}
               <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold text-white">Total Amount</span>

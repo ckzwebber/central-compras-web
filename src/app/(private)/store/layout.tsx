@@ -7,7 +7,6 @@ import { useRef, useEffect } from "react";
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   const cartRef = useRef<{ open: () => void }>(null);
 
-  // Expose the cart ref globally so it can be opened from anywhere
   useEffect(() => {
     if (typeof window !== "undefined") {
       (window as any).openCart = () => cartRef.current?.open();

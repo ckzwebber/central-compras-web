@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Produto } from "@/types/produto";
 import { FiltersCard, ProductFilters, defaultFilters } from "@/components/filters-card";
 import { ProductCard } from "@/components/product-card";
-import { produtosService } from "@/lib/produtos";
+import { produtosService } from "@/lib/produtos.service";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -22,7 +22,6 @@ export default function StoreProductsPage() {
         const data = await produtosService.getAll();
         setProdutos(data);
       } catch (err) {
-        console.error("Erro ao carregar produtos:", err);
         setError(err instanceof Error ? err.message : "Erro ao carregar produtos");
       } finally {
         setIsLoading(false);

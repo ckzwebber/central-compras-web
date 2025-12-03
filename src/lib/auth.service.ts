@@ -10,56 +10,29 @@ class AuthService {
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      console.log("🔵 Login iniciado...");
       const response = await api.post<LoginResponse>("/usuarios/login", credentials);
-
-      console.log("🔵 Resposta da API:", response.status);
 
       if (!response.status || response.status !== 200) {
         throw new Error("Invalid credentials");
       }
 
       const data: LoginResponse = response.data;
-      console.log("🔵 Dados recebidos:", data);
-
       const token = data.data.token;
-      console.log("🔵 Token extraído, salvando...");
 
       this.setToken(token);
       this.setCookie(token);
-      console.log("🔵 Token e cookie salvos");
 
       const user = jwtDecode<User>(token);
-      console.log("🔵 User decodificado:", user);
-
       this.setUser(user);
-      console.log("🔵 Login completo!");
 
       return data;
     } catch (error) {
-      console.error("❌ Login error:", error);
       throw new Error("Invalid email or password");
     }
   }
 
   async forgotPassword(request: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
     try {
-      // TODO: Substituir por chamada real ao backend
-      // const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(request),
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to send recovery email");
-      // }
-
-      // const data: ForgotPasswordResponse = await response.json();
-
-      // Mock temporário
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const data: ForgotPasswordResponse = {
@@ -69,29 +42,12 @@ class AuthService {
 
       return data;
     } catch (error) {
-      console.error("Forgot password error:", error);
       throw new Error("Failed to send recovery email");
     }
   }
 
   async resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResponse> {
     try {
-      // TODO: Substituir por chamada real ao backend
-      // const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(request),
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to reset password");
-      // }
-
-      // const data: ResetPasswordResponse = await response.json();
-
-      // Mock temporário
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const data: ResetPasswordResponse = {
@@ -101,7 +57,6 @@ class AuthService {
 
       return data;
     } catch (error) {
-      console.error("Reset password error:", error);
       throw new Error("Failed to reset password");
     }
   }

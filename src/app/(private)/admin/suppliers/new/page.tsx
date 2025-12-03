@@ -12,10 +12,12 @@ import { FormSection } from "@/components/admin/form-section";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import * as adminSuppliersService from "@/lib/admin-suppliers.service";
 import * as adminService from "@/lib/admin.service";
+import { CreateFornecedorData } from "@/types/fornecedor";
+import { User } from "@/types/user";
 
 export default function NewSupplierPage() {
   const router = useRouter();
-  const [users, setUsers] = useState<adminService.User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,6 @@ export default function NewSupplierPage() {
     try {
       setLoadingUsers(true);
       const data = await adminService.adminService.getAllUsers();
-      // Filter to only users with role "fornecedor" (supplier)
       const supplierUsers = data.data.filter((user: any) => user.funcao === "fornecedor");
       setUsers(supplierUsers);
     } catch (err) {
@@ -47,7 +48,7 @@ export default function NewSupplierPage() {
       const formData = new FormData(e.currentTarget);
       const selectedUserId = formData.get("usuario_id") as string;
 
-      const supplierData: adminSuppliersService.CreateSupplierData = {
+      const supplierData: CreateFornecedorData = {
         razao_social: formData.get("razaoSocial") as string,
         nome_fantasia: formData.get("nomeFantasia") as string,
         cnpj: formData.get("cnpj") as string,
@@ -83,7 +84,6 @@ export default function NewSupplierPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto max-w-4xl px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <Button asChild variant="link" className="group mb-4 gap-2 px-0 text-sm text-zinc-300 hover:text-white">
             <Link href="/admin/suppliers">
@@ -96,7 +96,6 @@ export default function NewSupplierPage() {
           <p className="text-sm text-zinc-400">Register a new supplier in the system.</p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -104,9 +103,7 @@ export default function NewSupplierPage() {
           </Alert>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Company Information */}
           <FormSection title="Company Information" description="Basic data for supplier identification">
             <div className="space-y-2">
               <Label htmlFor="razaoSocial">Company Name (Razão Social)</Label>
@@ -151,7 +148,6 @@ export default function NewSupplierPage() {
             </div>
           </FormSection>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="default" onClick={() => router.push("/admin/suppliers")} className="text-zinc-300 hover:text-white">
               Cancel

@@ -39,7 +39,6 @@ export default function StoreCartPage() {
   };
 
   const handleCheckout = () => {
-    // Redirecionar para página de checkout
     router.push("/store/checkout");
   };
 
@@ -54,7 +53,6 @@ export default function StoreCartPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-4 py-12">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight text-white">My Cart</h1>
           <p className="text-sm text-zinc-400">{cartItems.length === 0 ? "Your cart is empty" : `${itemCount} ${itemCount === 1 ? "item" : "items"} in your cart`}</p>
@@ -76,7 +74,6 @@ export default function StoreCartPage() {
           </Card>
         ) : (
           <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-            {/* Cart Items */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">Items</h2>
@@ -90,12 +87,10 @@ export default function StoreCartPage() {
                 <Card key={item.id} className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700">
                   <CardContent className="p-6">
                     <div className="flex gap-6">
-                      {/* Product Image */}
                       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
                         <Image src={item.imagem_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop"} alt={item.nome} fill className="object-cover" sizes="96px" />
                       </div>
 
-                      {/* Product Details */}
                       <div className="flex flex-1 flex-col justify-between">
                         <div>
                           <h3 className="font-semibold text-white">{item.nome}</h3>
@@ -107,7 +102,6 @@ export default function StoreCartPage() {
                         </div>
                       </div>
 
-                      {/* Quantity Controls */}
                       <div className="flex flex-col items-end justify-between">
                         <div className="flex items-center gap-3">
                           <Button variant="default" size="icon" className="h-8 w-8 border-zinc-700" onClick={() => decreaseQuantity(item.id)}>
@@ -130,7 +124,6 @@ export default function StoreCartPage() {
               ))}
             </div>
 
-            {/* Order Summary */}
             <div className="lg:sticky lg:top-32 h-fit">
               <Card className="border-zinc-800 bg-zinc-950/80">
                 <CardHeader>
@@ -171,7 +164,6 @@ export default function StoreCartPage() {
           </div>
         )}
 
-        {/* Clear Cart Confirmation Dialog */}
         <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
           <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100">
             <DialogHeader>

@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import useCart from "@/hooks/states/use-cart";
 import useCheckout from "@/hooks/states/use-checkout";
-import { pedidosService } from "@/lib/pedidos";
+import { pedidosService } from "@/lib/pedidos.service";
 import type { CreatePedidoDto } from "@/types/pedido";
 
 type PaymentMethod = "pix" | "card";
@@ -44,12 +44,10 @@ export default function PaymentPage() {
     setLoading(true);
 
     try {
-      // Validar se há itens no carrinho
       if (cartItems.length === 0) {
         throw new Error("Carrinho vazio");
       }
 
-      // Agrupar produtos por fornecedor
       const produtosPorFornecedor = cartItems.reduce((acc, item) => {
         const fornecedor_id = item.fornecedor_id;
         if (!acc[fornecedor_id]) {
@@ -63,14 +61,13 @@ export default function PaymentPage() {
         return acc;
       }, {} as Record<string, { produto_id: string; quantidade: number; valor_unitario: number }[]>);
 
-      // Criar um pedido para cada fornecedor
       const pedidosCriados = [];
       for (const [fornecedor_id, produtos] of Object.entries(produtosPorFornecedor)) {
         const pedidoData: CreatePedidoDto = {
           loja_id: fornecedor_id,
           descricao: `Pedido via checkout - ${produtos.length} produto(s)`,
-          forma_pagamento: selectedPayment === "pix" ? "pix" : "cartao_credito",
-          prazo_dias: 7, // Prazo padrão de 7 dias
+          forma_pagamento: selectedPayment === "pix" ? "pix" : "cartao",
+          prazo_dias: 7,
           produtos: produtos,
         };
 
@@ -78,24 +75,20 @@ export default function PaymentPage() {
         pedidosCriados.push(pedido);
       }
 
-      // Limpar carrinho e dados do checkout após sucesso
       clearCart();
       clearCheckoutData();
       setSuccess(true);
 
-      // Redirecionar para página de sucesso após 2 segundos
       setTimeout(() => {
         router.push("/store/orders");
       }, 2000);
     } catch (err: any) {
-      console.error("❌ Erro ao criar pedido:", err);
       setError(err.message || "Erro ao processar pedido. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Redirect if no checkout data
   if (!checkoutData) {
     router.push("/store/checkout");
     return null;
@@ -142,7 +135,6 @@ export default function PaymentPage() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(320px,1fr)] lg:items-start">
           <section className="space-y-6">
-            {/* Mensagens de Erro e Sucesso */}
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -158,7 +150,6 @@ export default function PaymentPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-7">
-              {/* Contact Information Display */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Contact</h3>
@@ -169,7 +160,6 @@ export default function PaymentPage() {
                 <p className="text-sm text-zinc-200">{checkoutData.email}</p>
               </section>
 
-              {/* Shipping Address Display */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Ship to</h3>
@@ -183,7 +173,6 @@ export default function PaymentPage() {
                 </p>
               </section>
 
-              {/* Shipping Method Display */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Shipping method</h3>
@@ -194,12 +183,10 @@ export default function PaymentPage() {
                 <p className="text-sm text-zinc-200">{shippingMethodText}</p>
               </section>
 
-              {/* Payment Method Selection */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <h2 className="mb-5 text-lg font-semibold">Payment method</h2>
 
                 <div className="space-y-3">
-                  {/* Credit Card Payment */}
                   <div
                     onClick={() => setSelectedPayment("card")}
                     className={`cursor-pointer rounded-lg border p-4 transition ${selectedPayment === "card" ? "border-white bg-zinc-900/50" : "border-zinc-800 hover:border-zinc-700"}`}>
@@ -220,7 +207,6 @@ export default function PaymentPage() {
                     </div>
                   </div>
 
-                  {/* PIX Payment */}
                   <div
                     onClick={() => setSelectedPayment("pix")}
                     className={`cursor-pointer rounded-lg border p-4 transition ${selectedPayment === "pix" ? "border-white bg-zinc-900/50" : "border-zinc-800 hover:border-zinc-700"}`}>
@@ -242,7 +228,6 @@ export default function PaymentPage() {
                   </div>
                 </div>
 
-                {/* Payment Details Form */}
                 <div className="mt-6">
                   {selectedPayment === "card" ? (
                     <div className="space-y-5">

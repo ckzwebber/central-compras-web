@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Save, Loader2, AlertCircle } from "lucide-react";
-import { supplierService, type SupplierProfile } from "@/lib/supplier.service";
+import { supplierService } from "@/lib/supplier.service";
+import type { SupplierProfile } from "@/types/supplier";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +71,6 @@ export default function SupplierProfilePage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto max-w-4xl px-6 py-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Profile</h1>
@@ -78,14 +78,12 @@ export default function SupplierProfilePage() {
           </div>
         </div>
 
-        {/* Success Alert */}
         {success && (
           <Alert className="mb-6 border-green-800 bg-green-950/20">
             <AlertDescription className="text-green-400">Profile updated successfully!</AlertDescription>
           </Alert>
         )}
 
-        {/* Error Alert */}
         {error && (
           <Alert className="mb-6 border-red-800 bg-red-950/20">
             <AlertCircle className="h-4 w-4 text-red-400" />
@@ -93,9 +91,7 @@ export default function SupplierProfilePage() {
           </Alert>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Company Information */}
           <FormSection title="Company Information" description="Basic company data">
             <div className="space-y-2">
               <Label htmlFor="razaoSocial">Company Name</Label>
@@ -126,7 +122,6 @@ export default function SupplierProfilePage() {
             </div>
           </FormSection>
 
-          {/* Actions */}
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (

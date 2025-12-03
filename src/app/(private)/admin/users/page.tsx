@@ -11,17 +11,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import * as adminService from "@/lib/admin.service";
+import { User } from "@/types/user";
 
-type UserType = "admin" | "loja" | "fornecedor";
+type UserType = "admin" | "loja" | "fornecedor" | "usuario";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<adminService.User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<UserType | "all">("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<adminService.User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteClick = (user: adminService.User) => {
+  const handleDeleteClick = (user: User) => {
     setUserToDelete(user);
     setDeleteDialogOpen(true);
   };
@@ -66,12 +67,10 @@ export default function UsersPage() {
   const filteredUsers = useMemo(() => {
     let filteredList = users;
 
-    // Filter by type
     if (filterType !== "all") {
       filteredList = filteredList.filter((user) => user.funcao === filterType);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filteredList = filteredList.filter((user) => user.nome.toLowerCase().includes(query) || user.email.toLowerCase().includes(query));
@@ -89,6 +88,7 @@ export default function UsersPage() {
       admin: { label: "Admin", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
       loja: { label: "Store", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
       fornecedor: { label: "Supplier", color: "bg-green-500/10 text-green-400 border-green-500/20" },
+      usuario: { label: "User", color: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20" },
     };
     return configs[type];
   };
@@ -114,7 +114,6 @@ export default function UsersPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Users</h1>
@@ -128,7 +127,6 @@ export default function UsersPage() {
           </Button>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -136,7 +134,6 @@ export default function UsersPage() {
           </Alert>
         )}
 
-        {/* Search & Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -171,7 +168,6 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {/* Users Table */}
         {filteredUsers.length === 0 ? (
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -187,7 +183,6 @@ export default function UsersPage() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex flex-1 items-center gap-4">
-                        {/* User Info */}
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-white">{user.nome}</h3>
@@ -196,7 +191,6 @@ export default function UsersPage() {
                           <p className="mt-0.5 text-sm text-zinc-400">{user.email}</p>
                         </div>
 
-                        {/* Created Date */}
                         <div className="hidden text-sm text-zinc-400 sm:block">Registered: {formatDate(user.criado_em)}</div>
                       </div>
 
@@ -222,7 +216,6 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="border-zinc-800 bg-zinc-950">
           <AlertDialogHeader>

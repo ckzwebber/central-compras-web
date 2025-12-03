@@ -70,7 +70,7 @@ export const CartSheet = forwardRef((_, ref) => {
             <div className="space-y-4">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex gap-4 border-b border-zinc-800 pb-4">
-                  <img src={item.imagem_url} alt={item.nome} className="h-20 w-20 rounded object-cover" />
+                  <img src={item.imagem_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&h=80&fit=crop"} alt={item.nome} className="h-20 w-20 rounded object-cover" />
                   <div className="flex-1">
                     <h3 className="font-semibold text-white">{item.nome}</h3>
                     <p className="text-sm text-zinc-400">Quantity: {item.quantidade}</p>

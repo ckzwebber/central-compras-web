@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { supplierService, type SupplierTerm } from "@/lib/supplier.service";
+import { supplierService } from "@/lib/supplier.service";
+import type { SupplierTerm } from "@/types/supplier";
 
 const brazilianStates = [
   { uf: "AC", name: "Acre" },
@@ -119,7 +120,6 @@ export default function SupplierTermsPage() {
 
       handleCloseDialog();
     } catch (err: any) {
-      console.error("Term save error:", err);
       setError(err instanceof Error ? err.message : "Failed to save commercial term");
     } finally {
       setIsSubmitting(false);
@@ -153,7 +153,6 @@ export default function SupplierTermsPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Commercial Terms</h1>
@@ -165,7 +164,6 @@ export default function SupplierTermsPage() {
           </Button>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -173,7 +171,6 @@ export default function SupplierTermsPage() {
           </Alert>
         )}
 
-        {/* Terms List */}
         {terms.length === 0 ? (
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -226,7 +223,6 @@ export default function SupplierTermsPage() {
         )}
       </div>
 
-      {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
         <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100">
           <DialogHeader>
@@ -282,7 +278,6 @@ export default function SupplierTermsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="border-zinc-800 bg-zinc-950">
           <AlertDialogHeader>

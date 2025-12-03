@@ -13,14 +13,12 @@ export default function ContactPage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-12">
         <div className="w-full max-w-2xl">
-          {/* Logo */}
           <div className="mb-8 flex justify-center">
             <Link href="/" className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-black shadow-lg transition-transform hover:scale-105">
               <SiWolframlanguage size={36} className="text-white" />
             </Link>
           </div>
 
-          {/* Contact Card */}
           <Card className="border-zinc-800 bg-zinc-950/80 shadow-xl">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold text-white">Request Access</CardTitle>
@@ -28,7 +26,6 @@ export default function ContactPage() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Contact Information */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-white">Contact Information</h3>
 
@@ -69,7 +66,6 @@ export default function ContactPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* User Types */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-white">Who can access the platform?</h3>
 
@@ -99,7 +95,6 @@ export default function ContactPage() {
 
               <Separator className="bg-zinc-800" />
 
-              {/* Instructions */}
               <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-4">
                 <p className="text-sm text-zinc-300">
                   <strong className="text-white">To request access:</strong>
@@ -119,7 +114,6 @@ export default function ContactPage() {
                 </ul>
               </div>
 
-              {/* Back to Login */}
               <div className="text-center">
                 <Button asChild variant="link" className="gap-2 text-white">
                   <Link href="/login">
@@ -131,9 +125,8 @@ export default function ContactPage() {
             </CardContent>
           </Card>
 
-          {/* Footer */}
           <div className="mt-8 text-center text-sm text-zinc-500">
-            <p>© 2024 Guri&apos;s Store. All rights reserved.</p>
+            <p>© 2025 Guri&apos;s Store. All rights reserved.</p>
           </div>
         </div>
       </div>

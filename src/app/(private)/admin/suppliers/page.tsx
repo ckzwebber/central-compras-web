@@ -11,14 +11,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import * as adminSuppliersService from "@/lib/admin-suppliers.service";
+import { Fornecedor } from "@/types/fornecedor";
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<adminSuppliersService.Supplier[]>([]);
+  const [suppliers, setSuppliers] = useState<Fornecedor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [supplierToDelete, setSupplierToDelete] = useState<adminSuppliersService.Supplier | null>(null);
+  const [supplierToDelete, setSupplierToDelete] = useState<Fornecedor | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function SuppliersPage() {
     }
   };
 
-  const handleDeleteClick = (supplier: adminSuppliersService.Supplier) => {
+  const handleDeleteClick = (supplier: Fornecedor) => {
     setSupplierToDelete(supplier);
     setDeleteDialogOpen(true);
   };
@@ -87,7 +88,6 @@ export default function SuppliersPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Suppliers</h1>
@@ -101,7 +101,6 @@ export default function SuppliersPage() {
           </Button>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -109,7 +108,6 @@ export default function SuppliersPage() {
           </Alert>
         )}
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
@@ -117,7 +115,6 @@ export default function SuppliersPage() {
           </div>
         </div>
 
-        {/* Suppliers List */}
         {filteredSuppliers.length > 0 ? (
           <div className="grid gap-4">
             {filteredSuppliers.map((supplier) => (
@@ -168,7 +165,6 @@ export default function SuppliersPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="border-zinc-800 bg-zinc-950">
           <AlertDialogHeader>

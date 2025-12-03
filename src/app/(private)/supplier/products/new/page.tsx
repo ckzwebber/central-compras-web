@@ -46,7 +46,6 @@ export default function NewSupplierProductPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto max-w-4xl px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <Button asChild variant="link" className="group mb-4 gap-2 px-0 text-sm text-zinc-300 hover:text-white">
             <Link href="/supplier/products">
@@ -59,7 +58,6 @@ export default function NewSupplierProductPage() {
           <p className="text-sm text-zinc-400">Add a new product to your catalog.</p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -67,7 +65,6 @@ export default function NewSupplierProductPage() {
           </Alert>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <FormSection title="Basic Information" description="Main product details">
             <div className="space-y-2">
@@ -109,7 +106,6 @@ export default function NewSupplierProductPage() {
             </div>
           </FormSection>
 
-          {/* Pricing & Stock */}
           <FormSection title="Pricing & Stock" description="Product pricing and inventory information">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -124,7 +120,6 @@ export default function NewSupplierProductPage() {
             </div>
           </FormSection>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="default" onClick={() => router.push("/supplier/products")} className="text-zinc-300 hover:text-white">
               Cancel

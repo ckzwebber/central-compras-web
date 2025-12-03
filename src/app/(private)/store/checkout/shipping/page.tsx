@@ -85,7 +85,6 @@ export default function ShippingPage() {
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(320px,1fr)] lg:items-start">
           <section className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-7">
-              {/* Contact Information Display */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Contact</h3>
@@ -93,10 +92,9 @@ export default function ShippingPage() {
                     Change
                   </Link>
                 </div>
-                <p className="text-sm text-zinc-200">{checkoutData.email}</p>
+                <p className="text-sm text-zinc-200">{checkoutData?.email}</p>
               </section>
 
-              {/* Shipping Address Display */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Ship to</h3>
@@ -105,17 +103,15 @@ export default function ShippingPage() {
                   </Link>
                 </div>
                 <p className="text-sm text-zinc-200">
-                  {checkoutData.firstName} {checkoutData.lastName}, {checkoutData.address}
-                  {checkoutData.apartment && `, ${checkoutData.apartment}`}, {checkoutData.city}, {checkoutData.state} {checkoutData.postalCode}, {checkoutData.country}
+                  {checkoutData?.firstName} {checkoutData?.lastName}, {checkoutData?.address}
+                  {checkoutData?.apartment && `, ${checkoutData.apartment}`}, {checkoutData?.city}, {checkoutData?.state} {checkoutData?.postalCode}, {checkoutData?.country}
                 </p>
               </section>
 
-              {/* Shipping Method Selection */}
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <h2 className="mb-5 text-lg font-semibold">Shipping method</h2>
 
                 <div className="space-y-3">
-                  {/* Economy Shipping */}
                   <div
                     onClick={() => setSelectedShipping("economy")}
                     className={`cursor-pointer rounded-lg border p-4 transition ${selectedShipping === "economy" ? "border-white bg-zinc-900/50" : "border-zinc-800 hover:border-zinc-700"}`}>
@@ -139,7 +135,6 @@ export default function ShippingPage() {
                     </div>
                   </div>
 
-                  {/* Standard Shipping */}
                   <div
                     onClick={() => setSelectedShipping("standard")}
                     className={`cursor-pointer rounded-lg border p-4 transition ${selectedShipping === "standard" ? "border-white bg-zinc-900/50" : "border-zinc-800 hover:border-zinc-700"}`}>

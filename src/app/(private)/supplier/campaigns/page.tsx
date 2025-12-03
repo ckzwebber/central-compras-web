@@ -3,7 +3,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, MoreVertical, Edit, Trash2, Power, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { supplierService, type SupplierCampaign } from "@/lib/supplier.service";
+import { supplierService } from "@/lib/supplier.service";
+import type { SupplierCampaign } from "@/types/supplier";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +33,6 @@ export default function SupplierCampaignsPage() {
       setLoading(true);
       setError(null);
       const data = await supplierService.getCampaigns();
-      console.log("Fetched campaigns:", data);
       setCampaigns(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load campaigns");
@@ -99,7 +99,6 @@ export default function SupplierCampaignsPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Promotional Campaigns</h1>
@@ -113,7 +112,6 @@ export default function SupplierCampaignsPage() {
           </Button>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -121,7 +119,6 @@ export default function SupplierCampaignsPage() {
           </Alert>
         )}
 
-        {/* Search & Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -150,7 +147,6 @@ export default function SupplierCampaignsPage() {
           </div>
         </div>
 
-        {/* Campaigns Grid */}
         {filteredCampaigns.length === 0 ? (
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -238,7 +234,6 @@ export default function SupplierCampaignsPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="border-zinc-800 bg-zinc-950">
           <AlertDialogHeader>

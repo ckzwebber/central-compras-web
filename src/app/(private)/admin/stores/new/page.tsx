@@ -10,12 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormSection } from "@/components/admin/form-section";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import * as adminStoresService from "@/lib/admin-stores.service";
-import * as adminService from "@/lib/admin.service";
+import { adminStoresService } from "@/lib/admin-stores.service";
+import { adminService } from "@/lib/admin.service";
+import type { User } from "@/types/user";
+import type { CreateLojaDto } from "@/types/loja";
 
 export default function NewStorePage() {
   const router = useRouter();
-  const [users, setUsers] = useState<adminService.User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,13 +29,11 @@ export default function NewStorePage() {
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
-      const data = await adminService.adminService.getAllUsers();
-      // Filter to only users with role "loja" (store)
+      const data = await adminService.getAllUsers();
       const storeUsers = data.data.filter((user: any) => user.funcao === "loja");
       setUsers(storeUsers);
     } catch (err) {
       setError("Failed to load users");
-      console.log(err);
     } finally {
       setLoadingUsers(false);
     }
@@ -48,7 +48,6 @@ export default function NewStorePage() {
       const formData = new FormData(e.currentTarget);
       const selectedUserId = formData.get("usuario_id") as string;
 
-      // Find selected user to get their endereco_id
       const selectedUser = users.find((u) => u.id === selectedUserId);
       if (!selectedUser) {
         throw new Error("Selected user not found");
@@ -58,15 +57,14 @@ export default function NewStorePage() {
         throw new Error("Selected user must have an address registered");
       }
 
-      // Create store with same endereco_id as the user
-      const storeData: adminStoresService.CreateStoreData = {
+      const storeData: CreateLojaDto = {
         nome: formData.get("name") as string,
         cnpj: formData.get("cnpj") as string,
         usuario_id: selectedUserId,
         endereco_id: selectedUser.endereco_id,
       };
 
-      await adminStoresService.adminStoresService.createStore(storeData);
+      await adminStoresService.createStore(storeData);
       router.push("/admin/stores");
     } catch (err: any) {
       setError(err.response.data.message ? err.response.data.message : "Failed to create store");
@@ -106,7 +104,6 @@ export default function NewStorePage() {
           <p className="text-sm text-zinc-400">Register a new store in the system.</p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -143,7 +140,6 @@ export default function NewStorePage() {
               </div>
             </div>
           </FormSection>{" "}
-          {/* Actions */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="default" onClick={() => router.push("/admin/stores")} className="text-zinc-300 hover:text-white">
               Cancel

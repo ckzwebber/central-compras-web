@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { jwtDecode } from "jwt-decode";
 import { User as userType } from "@/types/auth";
-import { userService, UpdateUserData, UpdatePasswordData, UpdateStoreData } from "@/lib/user.service";
+import { userService } from "@/lib/user.service";
+import { UpdateUserData, UpdatePasswordData, UpdateStoreData } from "@/types/user";
 
 interface StoreData {
   id: string;
@@ -31,20 +32,17 @@ export default function StoreProfilePage() {
   const [userData, setUserData] = useState<any>(null);
   const [storeData, setStoreData] = useState<StoreData | null>(null);
 
-  // User form state
   const [userForm, setUserForm] = useState({
     nome: "",
     sobrenome: "",
     email: "",
   });
 
-  // Store form state
   const [storeForm, setStoreForm] = useState({
     nome: "",
     cnpj: "",
   });
 
-  // Carregar dados do usuário e loja
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -58,14 +56,11 @@ export default function StoreProfilePage() {
           return;
         }
 
-        // Decodificar JWT payload para pegar o ID
         const payload: userType = jwtDecode(token);
 
-        // Buscar dados atualizados do usuário no servidor
         const userResponse = await userService.getUser(payload.sub);
         if (userResponse.success && userResponse.data) {
           const freshUserData = userResponse.data;
-          // Mesclar dados do token com dados frescos do servidor
           const mergedUserData = { ...payload, ...freshUserData };
           setUserData(mergedUserData);
           setUserForm({
@@ -74,7 +69,6 @@ export default function StoreProfilePage() {
             email: freshUserData.email,
           });
         } else {
-          // Fallback para dados do token se a API falhar
           setUserData(payload);
           setUserForm({
             nome: payload.nome,
@@ -83,12 +77,9 @@ export default function StoreProfilePage() {
           });
         }
 
-        // Carregar dados da loja
         const storeResponse = await userService.getMyStore();
-        console.log("Store response:", storeResponse);
         if (storeResponse.success && storeResponse.data && storeResponse.data.length > 0) {
           const store = storeResponse.data[0];
-          console.log(store);
           setStoreData(store);
           setStoreForm({
             nome: store.nome || "",
@@ -131,10 +122,8 @@ export default function StoreProfilePage() {
       if (updatedUserResponse.success && updatedUserResponse.data) {
         const updatedUser = updatedUserResponse.data;
 
-        // Se o backend retornou um novo token, atualizar o localStorage
         if (updatedUserResponse.data.token) {
           localStorage.setItem("auth_token", updatedUserResponse.data.token);
-          // Decodificar o novo token
           const newPayload = jwtDecode(updatedUserResponse.data.token) as any;
           setUserData(newPayload);
           setUserForm({
@@ -143,7 +132,6 @@ export default function StoreProfilePage() {
             email: newPayload.email,
           });
         } else {
-          // Fallback: atualizar estado local
           setUserData({ ...userData, ...updatedUser });
           setUserForm({
             nome: updatedUser.nome,
@@ -155,7 +143,6 @@ export default function StoreProfilePage() {
 
       setSuccessMessage("User data updated successfully!");
 
-      // Se email mudou, forçar novo login
       if (updateData.email) {
         setTimeout(() => {
           localStorage.removeItem("auth_token");
@@ -190,7 +177,6 @@ export default function StoreProfilePage() {
 
       await userService.updateStore(storeData.id, updateData);
 
-      // Buscar dados atualizados da loja
       const storeResponse = await userService.getMyStore();
       if (storeResponse.success && storeResponse.data && storeResponse.data.length > 0) {
         const updatedStore = storeResponse.data[0];
@@ -250,7 +236,6 @@ export default function StoreProfilePage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-12">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white">Profile Settings</h1>
           <p className="text-sm text-zinc-400">Manage your account and store information</p>
@@ -328,7 +313,6 @@ export default function StoreProfilePage() {
               </form>
             </FormSection>
 
-            {/* Store Information */}
             {storeData && (
               <FormSection title="Store Information" description="Your establishment data">
                 <form onSubmit={handleUpdateStore} className="space-y-6">
@@ -380,7 +364,6 @@ export default function StoreProfilePage() {
               </FormSection>
             )}
 
-            {/* Action Buttons */}
             <div className="flex justify-end gap-3">
               <Button type="button" variant="default" onClick={() => setIsPasswordDialogOpen(true)} className="w-full border-zinc-700 sm:w-auto">
                 <Key className="mr-2 h-4 w-4" />
@@ -390,7 +373,6 @@ export default function StoreProfilePage() {
           </div>
         ) : null}
 
-        {/* Change Password Dialog */}
         <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
           <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100">
             <DialogHeader>

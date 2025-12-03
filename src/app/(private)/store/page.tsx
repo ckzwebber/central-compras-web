@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, ShoppingCart, TrendingUp, ShoppingBag, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { pedidosService } from "@/lib/pedidos";
+import { pedidosService } from "@/lib/pedidos.service";
 import { Pedido } from "@/types/pedido";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -21,7 +21,6 @@ export default function StoreDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar pedidos ao montar o componente
   useEffect(() => {
     const loadPedidos = async () => {
       try {
@@ -30,7 +29,6 @@ export default function StoreDashboardPage() {
         const data = await pedidosService.getMeusPedidos();
         setPedidos(data);
       } catch (err) {
-        console.error("Erro ao carregar pedidos:", err);
         setError(err instanceof Error ? err.message : "Erro ao carregar pedidos");
       } finally {
         setIsLoading(false);
@@ -40,7 +38,6 @@ export default function StoreDashboardPage() {
     loadPedidos();
   }, []);
 
-  // Calcular estatísticas
   const totalOrders = pedidos.length;
   const pendingOrders = pedidos.filter((p) => p.status === "pendente").length;
   const currentMonth = new Date().getMonth();
@@ -52,7 +49,6 @@ export default function StoreDashboardPage() {
     })
     .reduce((sum, p) => sum + p.valor_total, 0);
 
-  // Pedidos recentes (últimos 5)
   const recentOrders = pedidos.sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()).slice(0, 5);
 
   const formatCurrency = (value: number) => {
@@ -93,7 +89,6 @@ export default function StoreDashboardPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
           <p className="text-sm text-zinc-400">Welcome to your store panel</p>
@@ -112,7 +107,6 @@ export default function StoreDashboardPage() {
           </div>
         ) : (
           <>
-            {/* Stats Grid */}
             <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {stats.map((stat) => (
                 <Card key={stat.title} className="border-zinc-800 bg-zinc-950/80">
@@ -128,7 +122,6 @@ export default function StoreDashboardPage() {
               ))}
             </div>
 
-            {/* Quick Actions */}
             <div className="mb-8">
               <h2 className="mb-4 text-lg font-semibold text-white">Quick Actions</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -154,7 +147,6 @@ export default function StoreDashboardPage() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              {/* Recent Orders */}
               <div>
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-white">Recent Orders</h2>
@@ -199,7 +191,6 @@ export default function StoreDashboardPage() {
                 </Card>
               </div>
 
-              {/* Activity Summary */}
               <div>
                 <div className="mb-4">
                   <h2 className="text-lg font-semibold text-white">Order Status Summary</h2>

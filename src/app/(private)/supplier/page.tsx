@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ShoppingCart, Megaphone, TrendingUp, Plus, Loader2, AlertCircle } from "lucide-react";
+import { Package, ShoppingCart, TrendingUp, Plus, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { supplierService } from "@/lib/supplier.service";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -31,14 +31,12 @@ export default function SupplierDashboardPage() {
       setLoading(true);
       setError(null);
 
-      // Fetch statistics and orders in parallel
       const [statsData, ordersData] = await Promise.all([supplierService.getStatistics(), supplierService.getMyOrders()]);
 
       setStatistics(statsData);
-      setRecentOrders(ordersData.data.slice(0, 4)); // Get only first 4 orders
+      setRecentOrders(ordersData.data.slice(0, 4));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard data");
-      console.error("Dashboard error:", err);
     } finally {
       setLoading(false);
     }
@@ -113,13 +111,11 @@ export default function SupplierDashboardPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
           <p className="text-sm text-zinc-400">Welcome to your supplier panel</p>
         </div>
 
-        {/* Stats Grid */}
         <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <Card key={stat.title} className="border-zinc-800 bg-zinc-950/80">
@@ -135,7 +131,6 @@ export default function SupplierDashboardPage() {
           ))}
         </div>
 
-        {/* Quick Actions */}
         <div className="mb-8">
           <h2 className="mb-4 text-lg font-semibold text-white">Quick Actions</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -160,7 +155,6 @@ export default function SupplierDashboardPage() {
           </div>
         </div>
 
-        {/* Recent Orders */}
         <div>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Recent Orders</h2>

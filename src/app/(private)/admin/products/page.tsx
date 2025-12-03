@@ -11,14 +11,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import * as adminProductsService from "@/lib/admin-products.service";
+import { Produto } from "@/types/produto";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<adminProductsService.Product[]>([]);
+  const [products, setProducts] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<adminProductsService.Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Produto | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDeleteClick = (product: adminProductsService.Product) => {
+  const handleDeleteClick = (product: Produto) => {
     setProductToDelete(product);
     setDeleteDialogOpen(true);
   };
@@ -107,7 +108,6 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Products</h1>
@@ -121,7 +121,6 @@ export default function ProductsPage() {
           </Button>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -129,7 +128,6 @@ export default function ProductsPage() {
           </Alert>
         )}
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -137,7 +135,6 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -201,7 +198,6 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="border-zinc-800 bg-zinc-950">
           <AlertDialogHeader>

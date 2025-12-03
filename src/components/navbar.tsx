@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 import { useRef, useEffect, useState } from "react";
 import useCart from "@/hooks/states/use-cart";
 import Link from "next/link";
-import { authService } from "@/lib/auth";
+import { authService } from "@/lib/auth.service";
 import type { User } from "@/types/auth";
 
 export const Navbar = () => {

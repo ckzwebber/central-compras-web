@@ -11,14 +11,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import * as adminStoresService from "@/lib/admin-stores.service";
+import { Loja } from "@/types/loja";
 
 export default function StoresPage() {
-  const [stores, setStores] = useState<adminStoresService.Store[]>([]);
+  const [stores, setStores] = useState<Loja[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [storeToDelete, setStoreToDelete] = useState<adminStoresService.Store | null>(null);
+  const [storeToDelete, setStoreToDelete] = useState<Loja | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function StoresPage() {
     }
   };
 
-  const handleDeleteClick = (store: adminStoresService.Store) => {
+  const handleDeleteClick = (store: Loja) => {
     setStoreToDelete(store);
     setDeleteDialogOpen(true);
   };
@@ -59,8 +60,6 @@ export default function StoresPage() {
       setDeleting(false);
     }
   };
-
-  console.log("Stores:", stores);
 
   const filteredStores = stores.filter((store) => store.nome.toLowerCase().includes(searchTerm.toLowerCase()) || store.cnpj?.includes(searchTerm) || (store.usuario_id && String(store.usuario_id).includes(searchTerm)));
 
@@ -87,7 +86,6 @@ export default function StoresPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Stores</h1>
@@ -101,7 +99,6 @@ export default function StoresPage() {
           </Button>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -109,7 +106,6 @@ export default function StoresPage() {
           </Alert>
         )}
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
@@ -117,7 +113,6 @@ export default function StoresPage() {
           </div>
         </div>
 
-        {/* Stores List */}
         {filteredStores.length > 0 ? (
           <div className="grid gap-4">
             {filteredStores.map((store) => (
@@ -128,7 +123,7 @@ export default function StoresPage() {
                       <div className="flex items-center gap-3">
                         <h3 className="text-lg font-semibold text-white">{store.nome || "N/A"}</h3>
                         <span className="text-sm text-zinc-500">
-                          {store.criado_em || "N/A"} - {store.atualizado_em || "N/A"}
+                          {store.criado_em.toString() || "N/A"} - {store.atualizado_em.toString() || "N/A"}
                         </span>
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -170,7 +165,6 @@ export default function StoresPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="border-zinc-800 bg-zinc-950">
           <AlertDialogHeader>

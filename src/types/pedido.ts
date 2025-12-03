@@ -20,7 +20,7 @@ export interface Pedido {
   usuario_id: string;
   loja_id: string;
   status: "pendente" | "enviado" | "entregue" | "cancelado";
-  forma_pagamento: "dinheiro" | "cartao_credito" | "cartao_debito" | "pix" | "boleto";
+  forma_pagamento: "cartao" | "pix";
   prazo_dias: number;
   criado_em: Date;
   enviado_em: Date | null;
@@ -47,7 +47,7 @@ export interface PedidosResponse {
 export interface CreatePedidoDto {
   loja_id: string;
   descricao?: string;
-  forma_pagamento: "dinheiro" | "cartao_credito" | "cartao_debito" | "pix" | "boleto";
+  forma_pagamento: "cartao" | "pix";
   prazo_dias: number;
   status?: "pendente" | "enviado" | "entregue" | "cancelado";
   produtos: {
@@ -60,12 +60,11 @@ export interface CreatePedidoDto {
 export interface UpdatePedidoDto {
   descricao?: string;
   status?: "pendente" | "enviado" | "entregue" | "cancelado";
-  forma_pagamento?: "dinheiro" | "cartao_credito" | "cartao_debito" | "pix" | "boleto";
+  forma_pagamento?: "cartao" | "pix";
   prazo_dias?: number;
 }
 
-// Tipos mapeados para correspondência com frontend
-export type PedidoStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+export type PedidoStatus = "pending" | "processing" | "shipped" | "delivered";
 
 export interface PedidoFrontend {
   id: string;

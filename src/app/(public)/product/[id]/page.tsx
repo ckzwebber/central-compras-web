@@ -12,9 +12,10 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import useCart from "@/hooks/states/use-cart";
 import { Produto } from "@/types/produto";
-import { produtosService } from "@/lib/produtos";
-import { fornecedoresService, Fornecedor } from "@/lib/fornecedores.service";
+import { produtosService } from "@/lib/produtos.service";
+import { fornecedoresService } from "@/lib/fornecedores.service";
 import { useParams } from "next/navigation";
+import { Fornecedor } from "@/types/fornecedor";
 
 export default function ProductPage() {
   const { cart, updateCart } = useCart();
@@ -36,7 +37,6 @@ export default function ProductPage() {
           const data = await produtosService.getById(id.toString());
           setProduct(data);
 
-          // Buscar dados do fornecedor
           if (data.fornecedor_id) {
             try {
               const fornecedorResponse = await fornecedoresService.getById(data.fornecedor_id);
@@ -44,13 +44,10 @@ export default function ProductPage() {
                 setFornecedor(fornecedorResponse.data);
               }
             } catch (err) {
-              console.error("Erro ao carregar fornecedor:", err);
-              // Não bloqueia a exibição do produto se falhar ao buscar fornecedor
             }
           }
         }
       } catch (err) {
-        console.error("Erro ao carregar produto:", err);
         setError(err instanceof Error ? err.message : "Erro ao carregar produto");
       } finally {
         setIsLoading(false);
