@@ -5,23 +5,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, ShoppingCart, TrendingUp, ShoppingBag, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { pedidosService } from "@/lib/pedidos.service";
+import { authService } from "@/lib/auth.service";
 import { Pedido } from "@/types/pedido";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const statusConfig = {
   pendente: { label: "Pending", color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" },
+  processando: { label: "Processing", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
   enviado: { label: "Shipped", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
   entregue: { label: "Delivered", color: "bg-green-500/10 text-green-400 border-green-500/20" },
   cancelado: { label: "Cancelled", color: "bg-red-500/10 text-red-400 border-red-500/20" },
 };
 
 export default function StoreDashboardPage() {
+  const router = useRouter();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const user = authService.getUser();
+    if (user?.funcao === "admin" || user?.funcao === "fornecedor") {
+      router.push("/");
+      return;
+    }
+
     const loadPedidos = async () => {
       try {
         setIsLoading(true);
@@ -45,9 +55,11 @@ export default function StoreDashboardPage() {
   const monthlySpending = pedidos
     .filter((p) => {
       const pedidoDate = new Date(p.criado_em);
+      const pedidoStatus = p.status;
+      if (pedidoStatus === "cancelado") return false;
       return pedidoDate.getMonth() === currentMonth && pedidoDate.getFullYear() === currentYear;
     })
-    .reduce((sum, p) => sum + p.valor_total, 0);
+    .reduce((sum, p) => sum + parseFloat(p.valor_total), 0);
 
   const recentOrders = pedidos.sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()).slice(0, 5);
 
@@ -180,7 +192,7 @@ export default function StoreDashboardPage() {
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-lg font-semibold text-white">{formatCurrency(order.valor_total)}</div>
+                                <div className="text-lg font-semibold text-white">{formatCurrency(parseFloat(order.valor_total))}</div>
                               </div>
                             </div>
                           );

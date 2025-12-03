@@ -12,6 +12,7 @@ import { Pedido } from "@/types/pedido";
 
 const statusConfig = {
   pendente: { label: "Pending", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
+  processando: { label: "Processing", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
   enviado: { label: "Shipped", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
   entregue: { label: "Delivered", color: "bg-green-500/20 text-green-400 border-green-500/30" },
   cancelado: { label: "Cancelled", color: "bg-red-500/20 text-red-400 border-red-500/30" },
@@ -31,6 +32,7 @@ export default function StoreOrdersPage() {
         setError(null);
         const data = await pedidosService.getMeusPedidos();
         setPedidos(data);
+        console.log(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao carregar pedidos");
       } finally {
@@ -134,7 +136,7 @@ export default function StoreOrdersPage() {
                         <div className="grid gap-3 sm:grid-cols-3">
                           <div>
                             <p className="text-xs text-zinc-500">Total Amount</p>
-                            <p className="text-lg font-bold text-white">{formatCurrency(order.valor_total)}</p>
+                            <p className="text-lg font-bold text-white">{formatCurrency(parseFloat(order.valor_total))}</p>
                           </div>
                           <div>
                             <p className="text-xs text-zinc-500">Order Date</p>
@@ -151,7 +153,7 @@ export default function StoreOrdersPage() {
                             <div className="space-y-1">
                               {order.itens.slice(0, 2).map((item) => (
                                 <p key={item.id} className="text-sm text-zinc-300">
-                                  {item.produto?.nome || "Produto"} - {item.quantidade}x
+                                  {item.produto_nome || "Produto"} - {item.quantidade}x
                                 </p>
                               ))}
                               {order.itens.length > 2 && <p className="text-xs text-zinc-500">+{order.itens.length - 2} more items</p>}
@@ -198,12 +200,12 @@ export default function StoreOrdersPage() {
                     selectedOrder.itens.map((item) => (
                       <div key={item.id} className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
                         <div className="flex-1">
-                          <p className="font-medium text-white">{item.produto?.nome || "Produto"}</p>
+                          <p className="font-medium text-white">{item.produto_nome || "Produto"}</p>
                           <p className="text-sm text-zinc-400">
-                            {formatCurrency(item.valor_unitario)} × {item.quantidade}
+                            {formatCurrency(parseFloat(item.valor_unitario))} × {item.quantidade}
                           </p>
                         </div>
-                        <p className="text-lg font-bold text-white">{formatCurrency(item.valor_unitario * item.quantidade)}</p>
+                        <p className="text-lg font-bold text-white">{formatCurrency(parseFloat(item.valor_unitario) * item.quantidade)}</p>
                       </div>
                     ))
                   ) : (
@@ -253,7 +255,7 @@ export default function StoreOrdersPage() {
               <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold text-white">Total Amount</span>
-                  <span className="text-2xl font-bold text-white">{formatCurrency(selectedOrder.valor_total)}</span>
+                  <span className="text-2xl font-bold text-white">{formatCurrency(parseFloat(selectedOrder.valor_total))}</span>
                 </div>
               </div>
             </div>

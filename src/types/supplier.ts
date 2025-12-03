@@ -55,10 +55,12 @@ export interface UpdateSupplierProductData {
 
 export interface SupplierOrder {
   id: string;
-  loja_id: string;
-  loja_nome?: string;
+  loja: {
+    id: string;
+    nome: string;
+  };
   valor_total: number;
-  status: "pendente" | "processando" | "enviado" | "entregue";
+  status: "pendente" | "processando" | "enviado" | "entregue" | "cancelado";
   forma_pagamento: string;
   prazo_dias: number;
   criado_em: string;

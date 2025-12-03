@@ -4,17 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import useCart from "@/hooks/states/use-cart";
+import { authService } from "@/lib/auth.service";
 import { Minus, Plus, ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function StoreCartPage() {
   const router = useRouter();
   const { cart, setCart, clearCart } = useCart();
   const cartItems = cart?.produtos || [];
   const [showClearDialog, setShowClearDialog] = useState(false);
+
+  useEffect(() => {
+    const user = authService.getUser();
+    if (user?.funcao === "admin" || user?.funcao === "fornecedor") {
+      router.push("/");
+    }
+  }, [router]);
 
   const setCartItems = (itemsOrUpdater: any[] | ((items: any[]) => any[])) => {
     const currentItems = cart?.produtos || [];

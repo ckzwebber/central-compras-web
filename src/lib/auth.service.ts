@@ -119,7 +119,7 @@ class AuthService {
 
   removeCookie(): void {
     if (typeof document === "undefined") return;
-    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
   }
 
   getCookie(): string | null {

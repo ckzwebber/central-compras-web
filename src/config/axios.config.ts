@@ -30,6 +30,7 @@ api.interceptors.response.use(
       if (typeof window !== "undefined") {
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user_data");
+        document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
         if (!window.location.pathname.startsWith("/login")) {
           window.location.href = "/login";
         }

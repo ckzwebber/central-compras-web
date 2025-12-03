@@ -8,7 +8,9 @@ import type { SupplierCampaign } from "@/types/supplier";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -23,6 +25,9 @@ export default function SupplierCampaignsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<SupplierCampaign | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchCampaigns();
@@ -60,7 +65,57 @@ export default function SupplierCampaignsPage() {
     return new Date(date).toLocaleDateString("pt-BR");
   };
 
-  const handleEdit = (id: string) => {};
+  const handleOpenDialog = (campaign?: SupplierCampaign) => {
+    if (campaign) {
+      setEditingCampaign(campaign);
+    } else {
+      setEditingCampaign(null);
+    }
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingCampaign(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const campaignData = {
+        nome: formData.get("nome") as string,
+        descricao: (formData.get("descricao") as string) || undefined,
+        valor_min: formData.get("valor_min") ? parseFloat(formData.get("valor_min") as string) : undefined,
+        quantidade_min: formData.get("quantidade_min") ? parseInt(formData.get("quantidade_min") as string) : undefined,
+        desconto_porcentagem: parseFloat(formData.get("desconto_porcentagem") as string),
+      };
+
+      if (editingCampaign) {
+        const updated = await supplierService.updateCampaign(editingCampaign.id, campaignData);
+        setCampaigns(campaigns.map((c) => (c.id === editingCampaign.id ? updated : c)));
+      } else {
+        const created = await supplierService.createCampaign(campaignData);
+        setCampaigns([...campaigns, created]);
+      }
+
+      handleCloseDialog();
+    } catch (err: any) {
+      setError(err instanceof Error ? err.message : "Failed to save campaign");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (id: string) => {
+    const campaign = campaigns.find((c) => c.id === id);
+    if (campaign) {
+      handleOpenDialog(campaign);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -101,14 +156,12 @@ export default function SupplierCampaignsPage() {
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Promotional Campaigns</h1>
-            <p className="text-sm text-zinc-400">Manage your promotions and discounts</p>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Campaigns</h1>
+            <p className="text-sm text-zinc-400">Manage your promotional campaigns</p>
           </div>
-          <Button asChild className="sm:w-auto">
-            <Link href="/supplier/campaigns/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Campaign
-            </Link>
+          <Button onClick={() => handleOpenDialog()} className="sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            New Campaign
           </Button>
         </div>
 
@@ -248,6 +301,71 @@ export default function SupplierCampaignsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
+        <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100">
+          <DialogHeader>
+            <DialogTitle className="text-white">{editingCampaign ? "Edit Campaign" : "New Campaign"}</DialogTitle>
+            <DialogDescription className="text-zinc-400">Define promotional conditions and discounts</DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="nome">Campaign Name</Label>
+              <Input id="nome" name="nome" required defaultValue={editingCampaign?.nome || ""} placeholder="Summer Sale" className="border-zinc-800 bg-zinc-950" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="descricao">Description</Label>
+              <Input id="descricao" minLength={10} name="descricao" defaultValue={editingCampaign?.descricao || ""} placeholder="Special discount for summer season" className="border-zinc-800 bg-zinc-950" />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="desconto_porcentagem">Discount (%)</Label>
+                <Input
+                  id="desconto_porcentagem"
+                  name="desconto_porcentagem"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  required
+                  defaultValue={editingCampaign?.desconto_porcentagem || ""}
+                  placeholder="10.00"
+                  className="border-zinc-800 bg-zinc-950"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="valor_min">Min. Value (R$) (optional)</Label>
+                <Input id="valor_min" name="valor_min" type="number" step="0.01" min="0" defaultValue={editingCampaign?.valor_min || ""} placeholder="100.00" className="border-zinc-800 bg-zinc-950" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="quantidade_min">Min. Quantity (optional)</Label>
+              <Input id="quantidade_min" name="quantidade_min" type="number" min="1" defaultValue={editingCampaign?.quantidade_min || ""} placeholder="10" className="border-zinc-800 bg-zinc-950" />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={handleCloseDialog} disabled={isSubmitting} className="border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>{editingCampaign ? "Update" : "Create"}</>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

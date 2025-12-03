@@ -16,6 +16,7 @@ import { produtosService } from "@/lib/produtos.service";
 import { fornecedoresService } from "@/lib/fornecedores.service";
 import { useParams } from "next/navigation";
 import { Fornecedor } from "@/types/fornecedor";
+import { authService } from "@/lib/auth.service";
 
 export default function ProductPage() {
   const { cart, updateCart } = useCart();
@@ -25,10 +26,14 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userFunction, setUserFunction] = useState<string | undefined>(undefined);
 
   const { id } = useParams();
 
   useEffect(() => {
+    const user = authService.getUser();
+    setUserFunction(user?.funcao);
+
     const loadProduct = async () => {
       try {
         setIsLoading(true);
@@ -43,8 +48,7 @@ export default function ProductPage() {
               if (fornecedorResponse.success && fornecedorResponse.data) {
                 setFornecedor(fornecedorResponse.data);
               }
-            } catch (err) {
-            }
+            } catch (err) {}
           }
         }
       } catch (err) {
@@ -209,36 +213,40 @@ export default function ProductPage() {
               </p>
             </div>
 
-            <div className="">
-              <Label className="text-sm font-medium text-zinc-300">Quantity</Label>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900/50 mt-2">
-                  <Button type="button" variant="default" size="sm" onClick={() => handleQuantityChange(-1)} disabled={quantity <= 1} className="h-10 px-3 text-zinc-400 hover:text-white disabled:opacity-50">
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="w-12 text-center text-sm font-medium text-white">{quantity}</span>
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= product.quantidade_estoque}
-                    className="h-10 px-3 text-zinc-400 hover:text-white disabled:opacity-50">
-                    <Plus className="h-4 w-4" />
-                  </Button>
+            {(!userFunction || userFunction === "loja" || userFunction === "usuario") && (
+              <>
+                <div className="">
+                  <Label className="text-sm font-medium text-zinc-300">Quantity</Label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900/50 mt-2">
+                      <Button type="button" variant="default" size="sm" onClick={() => handleQuantityChange(-1)} disabled={quantity <= 1} className="h-10 px-3 text-zinc-400 hover:text-white disabled:opacity-50">
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-12 text-center text-sm font-medium text-white">{quantity}</span>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleQuantityChange(1)}
+                        disabled={quantity >= product.quantidade_estoque}
+                        className="h-10 px-3 text-zinc-400 hover:text-white disabled:opacity-50">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <span className="text-sm text-zinc-500">{product.quantidade_estoque} available</span>
+                  </div>
                 </div>
-                <span className="text-sm text-zinc-500">{product.quantidade_estoque} available</span>
-              </div>
-            </div>
 
-            <div className="space-y-3">
-              <Button onClick={addToCart} disabled={product.quantidade_estoque === 0} className="w-full gap-2 py-6 text-base font-semibold" size="lg">
-                <LiaCartPlusSolid className="h-5 w-5" />
-                Add to cart
-              </Button>
+                <div className="space-y-3">
+                  <Button onClick={addToCart} disabled={product.quantidade_estoque === 0} className="w-full gap-2 py-6 text-base font-semibold" size="lg">
+                    <LiaCartPlusSolid className="h-5 w-5" />
+                    Add to cart
+                  </Button>
 
-              {quantity > 1 && <p className="text-center text-sm text-zinc-400">Total: {formatCurrency(product.valor_unitario * quantity)}</p>}
-            </div>
+                  {quantity > 1 && <p className="text-center text-sm text-zinc-400">Total: {formatCurrency(product.valor_unitario * quantity)}</p>}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

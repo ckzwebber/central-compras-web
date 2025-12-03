@@ -7,6 +7,8 @@ import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
 import { LiaCartPlusSolid } from "react-icons/lia";
 import useCart from "@/hooks/states/use-cart";
+import { authService } from "@/lib/auth.service";
+import { useEffect, useState } from "react";
 
 type ProductCardProps = {
   produto: Produto;
@@ -14,6 +16,12 @@ type ProductCardProps = {
 
 export const ProductCard = ({ produto }: ProductCardProps) => {
   const { cart, updateCart } = useCart();
+  const [userFunction, setUserFunction] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const user = authService.getUser();
+    setUserFunction(user?.funcao);
+  }, []);
 
   const imagemUrl = produto.imagem_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop";
 
@@ -70,9 +78,11 @@ export const ProductCard = ({ produto }: ProductCardProps) => {
               currency: "BRL",
             }).format(produto.valor_unitario)}
           </p>
-          <Button size="sm" onClick={handleAddToCart}>
-            <LiaCartPlusSolid />
-          </Button>
+          {(!userFunction || userFunction === "loja" || userFunction === "usuario") && (
+            <Button size="sm" onClick={handleAddToCart}>
+              <LiaCartPlusSolid />
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </Link>

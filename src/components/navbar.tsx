@@ -116,7 +116,7 @@ export const Navbar = () => {
           </>
         )}
 
-        <CartSheet ref={cartRef} />
+        {(!user || userFunction === "loja" || userFunction === "usuario") && <CartSheet ref={cartRef} />}
       </div>
     </nav>
   );

@@ -1,40 +1,42 @@
 export interface PedidoProduto {
-  id?: string;
-  pedido_id?: string;
+  id: string;
+  pedido_id: string;
   produto_id: string;
   quantidade: number;
-  valor_unitario: number;
-  subtotal?: number;
-  produto?: {
-    id: string;
-    nome: string;
-    descricao?: string;
-    imagem_url?: string;
-  };
+  valor_unitario: string;
+  criado_em: string;
+  atualizado_em: string;
+  deletado_em: string | null;
+  produto_nome: string;
+  produto_categoria: string;
 }
 
 export interface Pedido {
   id: string;
-  valor_total: number;
+  valor_total: string;
   descricao: string | null;
   usuario_id: string;
   loja_id: string;
   fornecedor_id: string;
-  status: "pendente" | "enviado" | "entregue" | "cancelado";
+  status: "pendente" | "processando" | "enviado" | "entregue" | "cancelado";
   forma_pagamento: "cartao" | "pix";
   prazo_dias: number;
-  criado_em: Date;
-  enviado_em: Date | null;
-  entregue_em: Date | null;
-  itens?: PedidoProduto[];
+  criado_em: string;
+  enviado_em: string | null;
+  entregue_em: string | null;
+  deletado_em: string | null;
   loja?: {
     id: string;
     nome: string;
+    cnpj: string;
+    usuario_id: string;
+    endereco_id: string;
   };
   fornecedor?: {
     id: string;
     nome: string;
   };
+  itens?: PedidoProduto[];
 }
 
 export interface PedidoResponse {
@@ -64,7 +66,7 @@ export interface CreatePedidoDto {
 
 export interface UpdatePedidoDto {
   descricao?: string;
-  status?: "pendente" | "enviado" | "entregue" | "cancelado";
+  status?: "pendente" | "processando" | "enviado" | "entregue" | "cancelado";
   forma_pagamento?: "cartao" | "pix";
   prazo_dias?: number;
 }

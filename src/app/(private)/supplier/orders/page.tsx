@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Search, Eye, Package as PackageIcon, Loader2, AlertCircle } from "lucide-react";
+import { Search, Eye, Package as PackageIcon, Loader2, AlertCircle, Truck, CheckCircle, XCircle } from "lucide-react";
 import { supplierService } from "@/lib/supplier.service";
 import type { SupplierOrder } from "@/types/supplier";
 
@@ -28,6 +28,7 @@ export default function SupplierOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<SupplierOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -46,6 +47,23 @@ export default function SupplierOrdersPage() {
     }
   };
 
+  const getAvailableStatusTransitions = (currentStatus: string): OrderStatus[] => {
+    switch (currentStatus) {
+      case "pendente":
+        return ["processando", "cancelado"];
+      case "processando":
+        return ["enviado", "cancelado"];
+      case "enviado":
+        return ["entregue"];
+      case "entregue":
+        return [];
+      case "cancelado":
+        return [];
+      default:
+        return [];
+    }
+  };
+
   const filteredOrders = useMemo(() => {
     let filteredOrders = orders;
 
@@ -55,7 +73,7 @@ export default function SupplierOrdersPage() {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filteredOrders = filteredOrders.filter((order) => order.id.toLowerCase().includes(query) || order.loja_nome?.toLowerCase().includes(query));
+      filteredOrders = filteredOrders.filter((order) => order.id.toLowerCase().includes(query) || order.loja.nome.toLowerCase().includes(query));
     }
 
     return filteredOrders;
@@ -145,29 +163,73 @@ export default function SupplierOrdersPage() {
               <div className="space-y-4">
                 {filteredOrders.map((order) => {
                   const status = statusConfig[order.status as OrderStatus];
+                  const availableTransitions = getAvailableStatusTransitions(order.status);
+
                   return (
                     <Card key={order.id} className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/60">
                       <CardContent className="p-6">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="flex-1">
-                            <div className="mb-2 flex items-center gap-3">
-                              <h3 className="text-lg font-semibold text-white">{order.id.slice(0, 8)}</h3>
-                              <span className={`rounded-full border px-3 py-1 text-xs font-medium ${status.color}`}>{status.label}</span>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex-1">
+                              <div className="mb-2 flex items-center gap-3">
+                                <h3 className="text-lg font-semibold text-white">{order.id.slice(0, 8)}</h3>
+                                <span className={`rounded-full border px-3 py-1 text-xs font-medium ${status.color}`}>{status.label}</span>
+                              </div>
+                              <div className="space-y-1 text-sm text-zinc-400">
+                                <p>
+                                  <span className="font-medium text-zinc-300">Store:</span> {order.loja.nome}
+                                </p>
+                                <p>
+                                  <span className="font-medium text-zinc-300">Date:</span> {formatDate(order.criado_em)}
+                                </p>
+                                <p className="text-base font-semibold text-white">Total: {formatCurrency(order.valor_total)}</p>
+                              </div>
                             </div>
-                            <div className="space-y-1 text-sm text-zinc-400">
-                              <p>
-                                <span className="font-medium text-zinc-300">Store:</span> {order.loja_nome}
-                              </p>
-                              <p>
-                                <span className="font-medium text-zinc-300">Date:</span> {formatDate(order.criado_em)}
-                              </p>
-                              <p className="text-base font-semibold text-white">Total: {formatCurrency(order.valor_total)}</p>
-                            </div>
+                            <Button onClick={() => setSelectedOrder(order)} variant="default" size="sm" className="sm:w-auto">
+                              <Eye className="mr-2 h-4 w-4" />
+                              See Details
+                            </Button>
                           </div>
-                          <Button onClick={() => setSelectedOrder(order)} variant="default" size="sm" className="sm:w-auto">
-                            <Eye className="mr-2 h-4 w-4" />
-                            Ver Detalhes
-                          </Button>
+
+                          {availableTransitions.length > 0 && (
+                            <div className="border-t border-zinc-800 pt-4">
+                              <p className="mb-2 text-xs font-medium text-zinc-400">Quick Actions</p>
+                              <div className="flex flex-wrap gap-2">
+                                {availableTransitions.map((transition) => {
+                                  const transitionConfig = statusConfig[transition];
+                                  let icon = null;
+
+                                  if (transition === "processando") icon = <Loader2 className="h-4 w-4" />;
+                                  if (transition === "enviado") icon = <Truck className="h-4 w-4" />;
+                                  if (transition === "entregue") icon = <CheckCircle className="h-4 w-4" />;
+                                  if (transition === "cancelado") icon = <XCircle className="h-4 w-4" />;
+
+                                  return (
+                                    <Button
+                                      key={transition}
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={updatingStatus}
+                                      onClick={async () => {
+                                        try {
+                                          setUpdatingStatus(true);
+                                          await supplierService.updateOrderStatus(order.id, transition);
+                                          await fetchOrders();
+                                        } catch (err) {
+                                          setError(err instanceof Error ? err.message : "Failed to update order status");
+                                        } finally {
+                                          setUpdatingStatus(false);
+                                        }
+                                      }}
+                                      className="border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+                                      {updatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span className="mr-2">{icon}</span>}
+                                      {transitionConfig.label}
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -192,7 +254,7 @@ export default function SupplierOrdersPage() {
                 <h3 className="mb-2 text-sm font-semibold text-white">Order Information</h3>
                 <div className="space-y-1 text-sm text-zinc-400">
                   <p>
-                    <span className="font-medium text-zinc-300">Store:</span> {selectedOrder.loja_nome}
+                    <span className="font-medium text-zinc-300">Store:</span> {selectedOrder.loja.nome}
                   </p>
                   <p>
                     <span className="font-medium text-zinc-300">Date:</span> {formatDate(selectedOrder.criado_em)}
@@ -208,6 +270,47 @@ export default function SupplierOrdersPage() {
                 <span className="text-sm font-medium text-zinc-300">Total Amount:</span>
                 <span className="text-2xl font-bold text-white">{formatCurrency(selectedOrder.valor_total)}</span>
               </div>
+
+              {getAvailableStatusTransitions(selectedOrder.status).length > 0 && (
+                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+                  <h3 className="mb-3 text-sm font-semibold text-white">Update Order Status</h3>
+                  <div className="flex gap-2">
+                    {getAvailableStatusTransitions(selectedOrder.status).map((status) => {
+                      const statusConf = statusConfig[status];
+                      let icon = null;
+
+                      if (status === "processando") icon = <Loader2 className="h-4 w-4" />;
+                      if (status === "enviado") icon = <Truck className="h-4 w-4" />;
+                      if (status === "entregue") icon = <CheckCircle className="h-4 w-4" />;
+                      if (status === "cancelado") icon = <XCircle className="h-4 w-4" />;
+
+                      return (
+                        <Button
+                          key={status}
+                          size="default"
+                          variant="outline"
+                          disabled={updatingStatus}
+                          onClick={async () => {
+                            try {
+                              setUpdatingStatus(true);
+                              await supplierService.updateOrderStatus(selectedOrder.id, status);
+                              await fetchOrders();
+                              setSelectedOrder(null);
+                            } catch (err) {
+                              setError(err instanceof Error ? err.message : "Failed to update order status");
+                            } finally {
+                              setUpdatingStatus(false);
+                            }
+                          }}
+                          className="border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+                          {updatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span className="mr-2">{icon}</span>}
+                          {statusConf.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

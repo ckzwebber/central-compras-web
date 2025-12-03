@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Loader2, AlertCircle } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, AlertCircle, MoreVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supplierService } from "@/lib/supplier.service";
 import type { SupplierTerm } from "@/types/supplier";
 
@@ -184,21 +185,31 @@ export default function SupplierTermsPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {terms.map((term) => (
-              <Card key={term.id} className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/60">
+              <Card key={term.id} className="group border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/60">
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg text-white">{term.uf}</CardTitle>
                       <p className="text-sm text-zinc-400">{getStateName(term.uf)}</p>
                     </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(term)} className="h-8 w-8 text-zinc-400 hover:text-black">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => confirmDelete(term.id)} className="h-8 w-8 text-zinc-400 hover:text-red-400">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="default" size="icon" className="h-8 w-8 text-zinc-400">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
+                        <DropdownMenuItem onClick={() => handleOpenDialog(term)} className="text-zinc-300 focus:bg-zinc-900 focus:text-zinc-300">
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-zinc-800" />
+                        <DropdownMenuItem onClick={() => confirmDelete(term.id)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">

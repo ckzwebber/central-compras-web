@@ -179,7 +179,7 @@ export default function SupplierDashboardPage() {
                             <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${status.color}`}>{status.label}</span>
                           </div>
                           <div className="mt-1 flex items-center gap-4 text-sm text-zinc-400">
-                            <span>{order.loja_nome || "Store"}</span>
+                            <span>{order.loja.nome || "Store"}</span>
                             <span>•</span>
                             <span>{formatDate(order.criado_em)}</span>
                           </div>

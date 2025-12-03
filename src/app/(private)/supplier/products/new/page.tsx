@@ -91,18 +91,7 @@ export default function NewSupplierProductPage() {
 
             <div className="space-y-2">
               <Label htmlFor="categoria">Category</Label>
-              <select
-                id="categoria"
-                name="categoria"
-                required
-                className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-200 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40">
-                <option value="">Select a category</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Accessories">Accessories</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Office Supplies">Office Supplies</option>
-                <option value="Software">Software</option>
-              </select>
+              <Input id="categoria" name="categoria" required placeholder="Electronics, Clothing, etc." className="border-zinc-800 bg-zinc-950" />
             </div>
           </FormSection>
 

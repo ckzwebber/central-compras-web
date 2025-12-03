@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { jwtDecode } from "jwt-decode";
 import { User as userType } from "@/types/auth";
 import { userService } from "@/lib/user.service";
+import { authService } from "@/lib/auth.service";
 import { UpdateUserData, UpdatePasswordData, UpdateStoreData } from "@/types/user";
 
 interface StoreData {
@@ -145,7 +146,7 @@ export default function StoreProfilePage() {
 
       if (updateData.email) {
         setTimeout(() => {
-          localStorage.removeItem("auth_token");
+          authService.logout();
           window.location.href = "/login";
         }, 2000);
       }
@@ -200,15 +201,20 @@ export default function StoreProfilePage() {
     if (!userData?.sub) return;
 
     const formData = new FormData(e.currentTarget);
-    const senhaAtual = formData.get("currentPassword") as string;
-    const novaSenha = formData.get("newPassword") as string;
-    const confirmarNovaSenha = formData.get("confirmPassword") as string;
+    const senhaAtual = (formData.get("currentPassword") as string).trim();
+    const novaSenha = (formData.get("newPassword") as string).trim();
+    const confirmarNovaSenha = (formData.get("confirmPassword") as string).trim();
 
     setError(null);
     setSuccessMessage(null);
 
     if (novaSenha !== confirmarNovaSenha) {
       setError("Passwords don't match!");
+      return;
+    }
+
+    if (novaSenha.length < 6) {
+      setError("Password must be at least 6 characters!");
       return;
     }
 
@@ -223,12 +229,14 @@ export default function StoreProfilePage() {
 
       await userService.updatePassword(userData.sub, passwordData);
 
-      setSuccessMessage("Password changed successfully!");
+      setSuccessMessage("Password changed successfully! Redirecting to login...");
       setIsPasswordDialogOpen(false);
-      e.currentTarget.reset();
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      authService.logout();
+      window.location.href = "/login";
     } catch (err: any) {
       setError(err.response?.data?.message || "Error changing password.");
-    } finally {
       setIsChangingPassword(false);
     }
   };
