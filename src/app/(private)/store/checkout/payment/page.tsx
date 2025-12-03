@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
@@ -33,6 +33,12 @@ export default function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    if (!checkoutData) {
+      router.push("/store/checkout");
+    }
+  }, [checkoutData, router]);
+
   const subtotal = useMemo(() => cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0), [cartItems]);
 
   const shippingCost = checkoutData?.shippingMethod === "standard" ? 39.99 : 24.99;
@@ -64,7 +70,7 @@ export default function PaymentPage() {
       const pedidosCriados = [];
       for (const [fornecedor_id, produtos] of Object.entries(produtosPorFornecedor)) {
         const pedidoData: CreatePedidoDto = {
-          loja_id: fornecedor_id,
+          fornecedor_id: fornecedor_id,
           descricao: `Pedido via checkout - ${produtos.length} produto(s)`,
           forma_pagamento: selectedPayment === "pix" ? "pix" : "cartao",
           prazo_dias: 7,
@@ -90,7 +96,6 @@ export default function PaymentPage() {
   };
 
   if (!checkoutData) {
-    router.push("/store/checkout");
     return null;
   }
 
@@ -163,7 +168,7 @@ export default function PaymentPage() {
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Ship to</h3>
-                  <Link href="/checkout/shipping" className="text-sm font-medium text-zinc-500 hover:underline">
+                  <Link href="/store/checkout/shipping" className="text-sm font-medium text-zinc-500 hover:underline">
                     Change
                   </Link>
                 </div>
@@ -176,7 +181,7 @@ export default function PaymentPage() {
               <section className="rounded-xl bg-zinc-950/80 p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium text-zinc-400">Shipping method</h3>
-                  <Link href="/checkout/shipping" className="text-sm font-medium text-zinc-500 hover:underline">
+                  <Link href="/store/checkout/shipping" className="text-sm font-medium text-zinc-500 hover:underline">
                     Change
                   </Link>
                 </div>
@@ -284,7 +289,7 @@ export default function PaymentPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button asChild variant="link" className="group gap-2 px-0 text-sm text-zinc-300 hover:text-white" disabled={loading || success}>
-                  <Link href="/checkout/shipping">
+                  <Link href="/store/checkout/shipping">
                     <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
                     Return to shipping
                   </Link>

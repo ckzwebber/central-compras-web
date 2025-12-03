@@ -19,6 +19,7 @@ export interface Pedido {
   descricao: string | null;
   usuario_id: string;
   loja_id: string;
+  fornecedor_id: string;
   status: "pendente" | "enviado" | "entregue" | "cancelado";
   forma_pagamento: "cartao" | "pix";
   prazo_dias: number;
@@ -27,6 +28,10 @@ export interface Pedido {
   entregue_em: Date | null;
   itens?: PedidoProduto[];
   loja?: {
+    id: string;
+    nome: string;
+  };
+  fornecedor?: {
     id: string;
     nome: string;
   };
@@ -45,7 +50,7 @@ export interface PedidosResponse {
 }
 
 export interface CreatePedidoDto {
-  loja_id: string;
+  fornecedor_id: string;
   descricao?: string;
   forma_pagamento: "cartao" | "pix";
   prazo_dias: number;

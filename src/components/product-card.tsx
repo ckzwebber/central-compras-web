@@ -19,6 +19,14 @@ export const ProductCard = ({ produto }: ProductCardProps) => {
 
   const addToCart = (produto: Produto) => {
     if (produto) {
+      if (cart && cart.produtos.length > 0) {
+        const primeiroFornecedor = cart.produtos[0].fornecedor_id;
+        if (produto.fornecedor_id !== primeiroFornecedor) {
+          alert("Você só pode adicionar produtos do mesmo fornecedor ao carrinho. Por favor, finalize a compra atual ou limpe o carrinho.");
+          return;
+        }
+      }
+
       if (cart?.produtos.find((item) => item.id === produto.id)) {
         updateCart({
           produtos: cart.produtos.map((item) => (item.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item)),
