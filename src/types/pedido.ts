@@ -37,6 +37,19 @@ export interface Pedido {
     nome: string;
   };
   itens?: PedidoProduto[];
+  valor_original?: number;
+  desconto_aplicado?: number;
+  campanha_aplicada?: {
+    id: string;
+    nome: string;
+    desconto_porcentagem: number;
+  };
+  cashback?: number;
+  condicao_comercial?: {
+    uf: string;
+    cashback_porcentagem: number | null;
+    prazo_extendido_dias: number | null;
+  };
 }
 
 export interface PedidoResponse {

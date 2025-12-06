@@ -17,8 +17,10 @@ import useCheckout from "@/hooks/states/use-checkout";
 import { authService } from "@/lib/auth.service";
 import { lojasService } from "@/lib/lojas.service";
 import { enderecosService } from "@/lib/enderecos.service";
+import { campanhasService } from "@/lib/campanhas.service";
 import type { Endereco } from "@/types/endereco";
 import type { User } from "@/types/auth";
+import type { Campanha } from "@/types/campanha";
 import { ArrowLeft } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -29,10 +31,18 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<User | null>(null);
   const [endereco, setEndereco] = useState<Endereco | null>(null);
   const [loading, setLoading] = useState(true);
+  const [campanhaAplicavel, setCampanhaAplicavel] = useState<Campanha | null>(null);
 
   const subtotal = useMemo(() => cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0), [cartItems]);
 
-  const total = cart?.total ?? subtotal;
+  const descontoAplicado = useMemo(() => {
+    if (campanhaAplicavel) {
+      return (subtotal * campanhaAplicavel.desconto_porcentagem) / 100;
+    }
+    return 0;
+  }, [subtotal, campanhaAplicavel]);
+
+  const total = subtotal - descontoAplicado;
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -55,6 +65,21 @@ export default function CheckoutPage() {
 
     loadUserData();
   }, []);
+
+  useEffect(() => {
+    const calcularCampanha = async () => {
+      if (cartItems.length > 0) {
+        const fornecedorId = cartItems[0].fornecedor_id;
+        const valorTotal = cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0);
+        const quantidadeTotal = cartItems.reduce((total, item) => total + item.quantidade, 0);
+
+        const campanha = await campanhasService.verificarCampanhaAplicavel(fornecedorId, valorTotal, quantidadeTotal);
+        setCampanhaAplicavel(campanha);
+      }
+    };
+
+    calcularCampanha();
+  }, [cartItems]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -242,7 +267,21 @@ export default function CheckoutPage() {
 
           <Separator orientation="vertical" decorative className="hidden h-full w-px justify-self-center self-stretch bg-zinc-800/80 lg:block" />
 
-          <OrderSummary items={cartItems} subtotal={subtotal} total={total} />
+          <OrderSummary
+            items={cartItems}
+            subtotal={subtotal}
+            total={total}
+            valorOriginal={subtotal}
+            descontoAplicado={descontoAplicado}
+            campanhaAplicada={
+              campanhaAplicavel
+                ? {
+                    nome: campanhaAplicavel.nome,
+                    desconto_porcentagem: campanhaAplicavel.desconto_porcentagem,
+                  }
+                : undefined
+            }
+          />
         </div>
       </div>
     </main>

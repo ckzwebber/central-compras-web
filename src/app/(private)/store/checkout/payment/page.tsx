@@ -19,7 +19,9 @@ import { AlertCircle, CheckCircle } from "lucide-react";
 import useCart from "@/hooks/states/use-cart";
 import useCheckout from "@/hooks/states/use-checkout";
 import { pedidosService } from "@/lib/pedidos.service";
+import { campanhasService } from "@/lib/campanhas.service";
 import type { CreatePedidoDto } from "@/types/pedido";
+import type { Campanha } from "@/types/campanha";
 
 type PaymentMethod = "pix" | "card";
 
@@ -32,6 +34,7 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [campanhaAplicavel, setCampanhaAplicavel] = useState<Campanha | null>(null);
 
   useEffect(() => {
     if (!checkoutData) {
@@ -39,10 +42,34 @@ export default function PaymentPage() {
     }
   }, [checkoutData, router]);
 
+  useEffect(() => {
+    const calcularCampanha = async () => {
+      if (cartItems.length > 0) {
+        const fornecedorId = cartItems[0].fornecedor_id;
+        const valorTotal = cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0);
+        const quantidadeTotal = cartItems.reduce((total, item) => total + item.quantidade, 0);
+
+        const campanha = await campanhasService.verificarCampanhaAplicavel(fornecedorId, valorTotal, quantidadeTotal);
+        setCampanhaAplicavel(campanha);
+      }
+    };
+
+    calcularCampanha();
+  }, [cartItems]);
+
   const subtotal = useMemo(() => cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0), [cartItems]);
 
+  const descontoAplicado = useMemo(() => {
+    if (campanhaAplicavel) {
+      return (subtotal * campanhaAplicavel.desconto_porcentagem) / 100;
+    }
+    return 0;
+  }, [subtotal, campanhaAplicavel]);
+
+  const subtotalComDesconto = subtotal - descontoAplicado;
+
   const shippingCost = checkoutData?.shippingMethod === "standard" ? 39.99 : 24.99;
-  const total = subtotal + shippingCost;
+  const total = subtotalComDesconto + shippingCost;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -317,7 +344,22 @@ export default function PaymentPage() {
 
           <Separator orientation="vertical" decorative className="hidden h-full w-px justify-self-center self-stretch bg-zinc-800/80 lg:block" />
 
-          <OrderSummary items={cartItems} subtotal={subtotal} shippingCost={shippingCost} total={total} />
+          <OrderSummary
+            items={cartItems}
+            subtotal={subtotal}
+            shippingCost={shippingCost}
+            total={total}
+            valorOriginal={subtotal}
+            descontoAplicado={descontoAplicado}
+            campanhaAplicada={
+              campanhaAplicavel
+                ? {
+                    nome: campanhaAplicavel.nome,
+                    desconto_porcentagem: campanhaAplicavel.desconto_porcentagem,
+                  }
+                : undefined
+            }
+          />
         </div>
       </div>
     </main>

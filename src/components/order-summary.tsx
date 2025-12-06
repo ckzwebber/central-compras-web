@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Tag, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 interface OrderSummaryItem {
@@ -22,9 +24,28 @@ interface OrderSummaryProps {
   taxesCalculated?: boolean;
   taxesAmount?: number;
   total: number;
+  valorOriginal?: number;
+  descontoAplicado?: number;
+  campanhaAplicada?: {
+    nome: string;
+    desconto_porcentagem: number;
+  };
+  cashback?: number;
 }
 
-export function OrderSummary({ items, subtotal, shippingCost = null, shippingLabel = "Calculated at next step", taxesCalculated = false, taxesAmount, total }: OrderSummaryProps) {
+export function OrderSummary({
+  items,
+  subtotal,
+  shippingCost = null,
+  shippingLabel = "Calculated at next step",
+  taxesCalculated = false,
+  taxesAmount,
+  total,
+  valorOriginal,
+  descontoAplicado,
+  campanhaAplicada,
+  cashback,
+}: OrderSummaryProps) {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -65,8 +86,17 @@ export function OrderSummary({ items, subtotal, shippingCost = null, shippingLab
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between text-zinc-300">
               <span>Subtotal</span>
-              <span>{formatCurrency(subtotal)}</span>
+              <span>{formatCurrency(valorOriginal || subtotal)}</span>
             </div>
+            {campanhaAplicada && descontoAplicado && descontoAplicado > 0 && (
+              <div className="flex items-center justify-between text-white">
+                <div className="flex items-center gap-2">
+                  <Tag className="h-3 w-3" />
+                  <span className="font-semibold">{campanhaAplicada.nome} ({campanhaAplicada.desconto_porcentagem}%)</span>
+                </div>
+                <span className="font-semibold">-{formatCurrency(descontoAplicado)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between text-zinc-300">
               <span>Shipping</span>
               {shippingCost !== null ? <span>{formatCurrency(shippingCost)}</span> : <span className="text-xs text-zinc-500">{shippingLabel}</span>}
@@ -75,6 +105,15 @@ export function OrderSummary({ items, subtotal, shippingCost = null, shippingLab
               <span>Taxes</span>
               {taxesCalculated && taxesAmount !== undefined ? <span>{formatCurrency(taxesAmount)}</span> : <span className="text-xs text-zinc-500">Calculated at next step</span>}
             </div>
+            {cashback && cashback > 0 && (
+              <div className="flex items-center justify-between rounded-lg bg-zinc-900 border border-zinc-700 p-2 text-white">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-3 w-3" />
+                  <span className="text-xs font-bold">Cashback</span>
+                </div>
+                <span className="text-xs font-bold">+{formatCurrency(cashback)}</span>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="border-t border-zinc-800 px-5 pt-5">

@@ -1,14 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ShoppingCart } from "lucide-react";
-import { useState, useImperativeHandle, forwardRef } from "react";
+import { ShoppingCart, Tag } from "lucide-react";
+import { useState, useImperativeHandle, forwardRef, useEffect } from "react";
 import useCart from "@/hooks/states/use-cart";
+import { campanhasService } from "@/lib/campanhas.service";
+import type { Campanha } from "@/types/campanha";
 
 export const CartSheet = forwardRef((_, ref) => {
   const [open, setOpen] = useState(false);
   const { cart, setCart, updateCart, clearCart } = useCart();
   const cartItems = cart?.produtos || [];
+  const [campanhaAplicavel, setCampanhaAplicavel] = useState<Campanha | null>(null);
 
   const setCartItems = (itemsOrUpdater: any[] | ((items: any[]) => any[])) => {
     const currentItems = cart?.produtos || [];
@@ -23,7 +26,26 @@ export const CartSheet = forwardRef((_, ref) => {
     toggle: () => setOpen((o) => !o),
   }));
 
-  const total = cartItems.reduce((sum, item) => sum + item.valor_unitario * item.quantidade, 0);
+  useEffect(() => {
+    const calcularCampanha = async () => {
+      if (cartItems.length > 0) {
+        const fornecedorId = cartItems[0].fornecedor_id;
+        const valorTotal = cartItems.reduce((total, item) => total + item.valor_unitario * item.quantidade, 0);
+        const quantidadeTotal = cartItems.reduce((total, item) => total + item.quantidade, 0);
+
+        const campanha = await campanhasService.verificarCampanhaAplicavel(fornecedorId, valorTotal, quantidadeTotal);
+        setCampanhaAplicavel(campanha);
+      } else {
+        setCampanhaAplicavel(null);
+      }
+    };
+
+    calcularCampanha();
+  }, [cartItems]);
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.valor_unitario * item.quantidade, 0);
+  const descontoAplicado = campanhaAplicavel ? (subtotal * campanhaAplicavel.desconto_porcentagem) / 100 : 0;
+  const total = subtotal - descontoAplicado;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -91,9 +113,24 @@ export const CartSheet = forwardRef((_, ref) => {
           )}
         </div>
         <SheetFooter className="flex-col gap-4">
-          <div className="flex justify-between text-lg font-semibold text-white">
-            <span>Total:</span>
-            <span>{formatCurrency(total)}</span>
+          <div className="space-y-2 w-full">
+            <div className="flex justify-between text-sm text-zinc-400">
+              <span>Subtotal:</span>
+              <span>{formatCurrency(subtotal)}</span>
+            </div>
+            {campanhaAplicavel && descontoAplicado > 0 && (
+              <div className="flex justify-between text-sm text-white">
+                <div className="flex items-center gap-1">
+                  <Tag className="h-3 w-3" />
+                  <span className="font-semibold">{campanhaAplicavel.nome}</span>
+                </div>
+                <span className="font-semibold">-{formatCurrency(descontoAplicado)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-lg font-bold text-white border-t border-zinc-800 pt-2">
+              <span>Total:</span>
+              <span>{formatCurrency(total)}</span>
+            </div>
           </div>
           <Button
             className="w-full"

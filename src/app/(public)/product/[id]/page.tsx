@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Minus, Plus, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Loader2, AlertCircle, Tag, TrendingUp } from "lucide-react";
 import { LiaCartPlusSolid } from "react-icons/lia";
 import { toast } from "sonner";
 
@@ -15,14 +15,17 @@ import useCart from "@/hooks/states/use-cart";
 import { Produto } from "@/types/produto";
 import { produtosService } from "@/lib/produtos.service";
 import { fornecedoresService } from "@/lib/fornecedores.service";
+import { campanhasService } from "@/lib/campanhas.service";
 import { useParams } from "next/navigation";
 import { Fornecedor } from "@/types/fornecedor";
 import { authService } from "@/lib/auth.service";
+import type { Campanha } from "@/types/campanha";
 
 export default function ProductPage() {
   const { cart, updateCart } = useCart();
   const [product, setProduct] = useState<Produto | null>(null);
   const [fornecedor, setFornecedor] = useState<Fornecedor | null>(null);
+  const [campanha, setCampanha] = useState<Campanha | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +53,9 @@ export default function ProductPage() {
                 setFornecedor(fornecedorResponse.data);
               }
             } catch (err) {}
+
+            const campanhaAplicavel = await campanhasService.getMelhorCampanhaPorFornecedor(data.fornecedor_id);
+            setCampanha(campanhaAplicavel);
           }
         }
       } catch (err) {
@@ -81,7 +87,7 @@ export default function ProductPage() {
         const primeiroFornecedor = cart.produtos[0].fornecedor_id;
         if (product.fornecedor_id !== primeiroFornecedor) {
           toast.error("Fornecedor diferente", {
-            description: "Você só pode adicionar produtos do mesmo fornecedor. Finalize a compra atual ou limpe o carrinho."
+            description: "Você só pode adicionar produtos do mesmo fornecedor. Finalize a compra atual ou limpe o carrinho.",
           });
           return;
         }
@@ -198,8 +204,31 @@ export default function ProductPage() {
             </div>
 
             <div>
-              <p className="text-3xl font-bold text-white">{formatCurrency(product.valor_unitario)}</p>
+              <p className="text-3xl font-bold text-white">
+                {campanha && <span className="block text-xl text-zinc-500 line-through mb-1">{formatCurrency(product.valor_unitario)}</span>}
+                {formatCurrency(campanha ? product.valor_unitario * (1 - campanha.desconto_porcentagem / 100) : product.valor_unitario)}
+              </p>
             </div>
+
+            {campanha && (
+              <Alert className="border-zinc-700 bg-zinc-900/50">
+                <Tag className="h-4 w-4 stroke-zinc-300" />
+                <AlertDescription>
+                  <div className="space-y-1">
+                    <p className="font-bold text-white">{campanha.nome}</p>
+                    <p className="text-sm text-zinc-400">{campanha.descricao}</p>
+                    <div className="flex items-center gap-4 text-xs text-zinc-500 mt-2">
+                      {campanha.valor_min > 0 && <span>Min. order: {formatCurrency(campanha.valor_min)}</span>}
+                      {campanha.quantidade_min > 0 && (
+                        <span>
+                          Min. quantity: {campanha.quantidade_min} {campanha.quantidade_min === 1 ? "item" : "items"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Separator className="bg-zinc-800" />
             <div>
