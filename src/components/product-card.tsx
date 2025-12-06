@@ -9,6 +9,7 @@ import { LiaCartPlusSolid } from "react-icons/lia";
 import useCart from "@/hooks/states/use-cart";
 import { authService } from "@/lib/auth.service";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type ProductCardProps = {
   produto: Produto;
@@ -30,7 +31,9 @@ export const ProductCard = ({ produto }: ProductCardProps) => {
       if (cart && cart.produtos.length > 0) {
         const primeiroFornecedor = cart.produtos[0].fornecedor_id;
         if (produto.fornecedor_id !== primeiroFornecedor) {
-          alert("Você só pode adicionar produtos do mesmo fornecedor ao carrinho. Por favor, finalize a compra atual ou limpe o carrinho.");
+          toast.error("Fornecedor diferente", {
+            description: "Você só pode adicionar produtos do mesmo fornecedor. Finalize a compra atual ou limpe o carrinho."
+          });
           return;
         }
       }

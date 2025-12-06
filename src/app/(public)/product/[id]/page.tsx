@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Minus, Plus, Loader2, AlertCircle } from "lucide-react";
 import { LiaCartPlusSolid } from "react-icons/lia";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -79,7 +80,9 @@ export default function ProductPage() {
       if (cart && cart.produtos.length > 0) {
         const primeiroFornecedor = cart.produtos[0].fornecedor_id;
         if (product.fornecedor_id !== primeiroFornecedor) {
-          alert("Você só pode adicionar produtos do mesmo fornecedor ao carrinho. Por favor, finalize a compra atual ou limpe o carrinho.");
+          toast.error("Fornecedor diferente", {
+            description: "Você só pode adicionar produtos do mesmo fornecedor. Finalize a compra atual ou limpe o carrinho."
+          });
           return;
         }
       }

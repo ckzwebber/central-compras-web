@@ -35,6 +35,7 @@ export default function UsersPage() {
       setError(null);
       const data = await adminService.adminService.getAllUsers();
       setUsers(data.data);
+      console.log(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load users");
     } finally {

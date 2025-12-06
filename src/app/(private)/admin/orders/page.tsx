@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Search, Eye, Package as PackageIcon, Loader2, AlertCircle, Truck, CheckCircle, XCircle } from "lucide-react";
-import { supplierService } from "@/lib/supplier.service";
-import type { SupplierOrder } from "@/types/supplier";
+import { pedidosService } from "@/lib/pedidos.service";
+import type { Pedido } from "@/types/pedido";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,14 +21,13 @@ const statusConfig = {
   cancelado: { label: "Canceled", color: "bg-red-500/10 text-red-400 border-red-500/20" },
 };
 
-export default function SupplierOrdersPage() {
-  const [orders, setOrders] = useState<SupplierOrder[]>([]);
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Pedido[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<OrderStatus | "all">("all");
-  const [selectedOrder, setSelectedOrder] = useState<SupplierOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Pedido | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -38,29 +37,12 @@ export default function SupplierOrdersPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await supplierService.getMyOrders();
-      setOrders(data.data);
+      const data = await pedidosService.getAll();
+      setOrders(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load orders");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getAvailableStatusTransitions = (currentStatus: string): OrderStatus[] => {
-    switch (currentStatus) {
-      case "pendente":
-        return ["processando", "cancelado"];
-      case "processando":
-        return ["enviado", "cancelado"];
-      case "enviado":
-        return ["entregue"];
-      case "entregue":
-        return [];
-      case "cancelado":
-        return [];
-      default:
-        return [];
     }
   };
 
@@ -73,17 +55,23 @@ export default function SupplierOrdersPage() {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filteredOrders = filteredOrders.filter((order) => order.id.toLowerCase().includes(query) || order.loja_id.nome.toLowerCase().includes(query));
+      filteredOrders = filteredOrders.filter((order) => {
+        const orderIdMatch = order.id.toLowerCase().includes(query);
+        const lojaMatch = order.loja?.nome?.toLowerCase().includes(query);
+        const fornecedorMatch = (order as any).fornecedor_nome?.toLowerCase().includes(query);
+        return orderIdMatch || lojaMatch || fornecedorMatch;
+      });
     }
 
     return filteredOrders;
   }, [searchQuery, filterStatus, orders]);
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: string | number) => {
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(value);
+    }).format(numValue);
   };
 
   const formatDate = (date: string) => {
@@ -100,17 +88,17 @@ export default function SupplierOrdersPage() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Orders</h1>
-          <p className="text-sm text-zinc-400">Manage orders from stores</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">All Orders</h1>
+          <p className="text-sm text-zinc-400">View and monitor all orders in the system</p>
         </div>
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-            <Input placeholder="Search by order ID or store..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="border-zinc-800 bg-zinc-950 pl-10" />
+            <Input placeholder="Search by order ID, store, or supplier..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="border-zinc-800 bg-zinc-950 pl-10" />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant={filterStatus === "all" ? "default" : "outline"}
               onClick={() => setFilterStatus("all")}
@@ -135,6 +123,18 @@ export default function SupplierOrdersPage() {
               className={filterStatus !== "enviado" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
               Shipped
             </Button>
+            <Button
+              variant={filterStatus === "entregue" ? "default" : "outline"}
+              onClick={() => setFilterStatus("entregue")}
+              className={filterStatus !== "entregue" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
+              Delivered
+            </Button>
+            <Button
+              variant={filterStatus === "cancelado" ? "default" : "outline"}
+              onClick={() => setFilterStatus("cancelado")}
+              className={filterStatus !== "cancelado" ? "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white" : ""}>
+              Canceled
+            </Button>
           </div>
         </div>
 
@@ -156,6 +156,7 @@ export default function SupplierOrdersPage() {
             {filteredOrders.length === 0 ? (
               <Card className="border-zinc-800 bg-zinc-950/80">
                 <CardContent className="flex flex-col items-center justify-center py-12">
+                  <PackageIcon className="h-12 w-12 text-zinc-600 mb-4" />
                   <p className="text-zinc-400">{searchQuery || filterStatus !== "all" ? "No orders found matching your filters." : "No orders yet."}</p>
                 </CardContent>
               </Card>
@@ -163,7 +164,6 @@ export default function SupplierOrdersPage() {
               <div className="space-y-4">
                 {filteredOrders.map((order) => {
                   const status = statusConfig[order.status as OrderStatus];
-                  const availableTransitions = getAvailableStatusTransitions(order.status);
 
                   return (
                     <Card key={order.id} className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/60">
@@ -177,7 +177,10 @@ export default function SupplierOrdersPage() {
                               </div>
                               <div className="space-y-1 text-sm text-zinc-400">
                                 <p>
-                                  <span className="font-medium text-zinc-300">Store:</span> {order.loja_id.nome}
+                                  <span className="font-medium text-zinc-300">Store:</span> {order.loja?.nome || "N/A"}
+                                </p>
+                                <p>
+                                  <span className="font-medium text-zinc-300">Supplier:</span> {(order as any).fornecedor_nome || "N/A"}
                                 </p>
                                 <p>
                                   <span className="font-medium text-zinc-300">Date:</span> {formatDate(order.criado_em)}
@@ -187,49 +190,9 @@ export default function SupplierOrdersPage() {
                             </div>
                             <Button onClick={() => setSelectedOrder(order)} variant="default" size="sm" className="sm:w-auto">
                               <Eye className="mr-2 h-4 w-4" />
-                              See Details
+                              View Details
                             </Button>
                           </div>
-
-                          {availableTransitions.length > 0 && (
-                            <div className="border-t border-zinc-800 pt-4">
-                              <p className="mb-2 text-xs font-medium text-zinc-400">Quick Actions</p>
-                              <div className="flex flex-wrap gap-2">
-                                {availableTransitions.map((transition) => {
-                                  const transitionConfig = statusConfig[transition];
-                                  let icon = null;
-
-                                  if (transition === "processando") icon = <Loader2 className="h-4 w-4" />;
-                                  if (transition === "enviado") icon = <Truck className="h-4 w-4" />;
-                                  if (transition === "entregue") icon = <CheckCircle className="h-4 w-4" />;
-                                  if (transition === "cancelado") icon = <XCircle className="h-4 w-4" />;
-
-                                  return (
-                                    <Button
-                                      key={transition}
-                                      size="sm"
-                                      variant="outline"
-                                      disabled={updatingStatus}
-                                      onClick={async () => {
-                                        try {
-                                          setUpdatingStatus(true);
-                                          await supplierService.updateOrderStatus(order.id, transition);
-                                          await fetchOrders();
-                                        } catch (err) {
-                                          setError(err instanceof Error ? err.message : "Failed to update order status");
-                                        } finally {
-                                          setUpdatingStatus(false);
-                                        }
-                                      }}
-                                      className="border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white">
-                                      {updatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span className="mr-2">{icon}</span>}
-                                      {transitionConfig.label}
-                                    </Button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -245,70 +208,83 @@ export default function SupplierOrdersPage() {
         <DialogContent className="max-w-2xl border-zinc-800 bg-zinc-950 text-zinc-100">
           <DialogHeader>
             <DialogTitle className="text-white">Order Details</DialogTitle>
-            <DialogDescription className="text-zinc-400">{selectedOrder?.id.slice(0, 8)}</DialogDescription>
+            <DialogDescription className="text-zinc-400">Order ID: {selectedOrder?.id.slice(0, 8)}</DialogDescription>
           </DialogHeader>
 
           {selectedOrder && (
             <div className="space-y-6">
               <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-                <h3 className="mb-2 text-sm font-semibold text-white">Order Information</h3>
-                <div className="space-y-1 text-sm text-zinc-400">
-                  <p>
-                    <span className="font-medium text-zinc-300">Store:</span> {selectedOrder.loja_id.nome}
-                  </p>
-                  <p>
-                    <span className="font-medium text-zinc-300">Date:</span> {formatDate(selectedOrder.criado_em)}
-                  </p>
-                  <p>
-                    <span className="font-medium text-zinc-300">Status:</span>{" "}
-                    <span className={`ml-1 rounded-full border px-2 py-0.5 text-xs ${statusConfig[selectedOrder.status as OrderStatus].color}`}>{statusConfig[selectedOrder.status as OrderStatus].label}</span>
-                  </p>
+                <h3 className="mb-3 text-sm font-semibold text-white">Order Information</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">Store</p>
+                    <p className="text-sm text-zinc-300">{selectedOrder.loja?.nome || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">Supplier</p>
+                    <p className="text-sm text-zinc-300">{(selectedOrder as any).fornecedor_nome || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">Order Date</p>
+                    <p className="text-sm text-zinc-300">{formatDate(selectedOrder.criado_em)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">Status</p>
+                    <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs ${statusConfig[selectedOrder.status as OrderStatus].color}`}>{statusConfig[selectedOrder.status as OrderStatus].label}</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">Payment Method</p>
+                    <p className="text-sm text-zinc-300 capitalize">{selectedOrder.forma_pagamento}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">Payment Terms</p>
+                    <p className="text-sm text-zinc-300">{selectedOrder.prazo_dias} days</p>
+                  </div>
                 </div>
+                {selectedOrder.descricao && (
+                  <div className="mt-3">
+                    <p className="text-xs text-zinc-500 mb-1">Description</p>
+                    <p className="text-sm text-zinc-300">{selectedOrder.descricao}</p>
+                  </div>
+                )}
               </div>
+
+              {selectedOrder.itens && selectedOrder.itens.length > 0 && (
+                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+                  <h3 className="mb-3 text-sm font-semibold text-white">Order Items</h3>
+                  <div className="space-y-2">
+                    {selectedOrder.itens.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between rounded border border-zinc-800 bg-zinc-900/30 p-3">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">{item.produto_nome}</p>
+                          <p className="text-xs text-zinc-500">{item.produto_categoria}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-zinc-300">Qty: {item.quantidade}</p>
+                          <p className="text-xs text-zinc-500">{formatCurrency(item.valor_unitario)} each</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <span className="text-sm font-medium text-zinc-300">Total Amount:</span>
                 <span className="text-2xl font-bold text-white">{formatCurrency(selectedOrder.valor_total)}</span>
               </div>
 
-              {getAvailableStatusTransitions(selectedOrder.status).length > 0 && (
+              {selectedOrder.enviado_em && (
                 <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-                  <h3 className="mb-3 text-sm font-semibold text-white">Update Order Status</h3>
-                  <div className="flex gap-2">
-                    {getAvailableStatusTransitions(selectedOrder.status).map((status) => {
-                      const statusConf = statusConfig[status];
-                      let icon = null;
-
-                      if (status === "processando") icon = <Loader2 className="h-4 w-4" />;
-                      if (status === "enviado") icon = <Truck className="h-4 w-4" />;
-                      if (status === "entregue") icon = <CheckCircle className="h-4 w-4" />;
-                      if (status === "cancelado") icon = <XCircle className="h-4 w-4" />;
-
-                      return (
-                        <Button
-                          key={status}
-                          size="default"
-                          variant="outline"
-                          disabled={updatingStatus}
-                          onClick={async () => {
-                            try {
-                              setUpdatingStatus(true);
-                              await supplierService.updateOrderStatus(selectedOrder.id, status);
-                              await fetchOrders();
-                              setSelectedOrder(null);
-                            } catch (err) {
-                              setError(err instanceof Error ? err.message : "Failed to update order status");
-                            } finally {
-                              setUpdatingStatus(false);
-                            }
-                          }}
-                          className="border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white">
-                          {updatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span className="mr-2">{icon}</span>}
-                          {statusConf.label}
-                        </Button>
-                      );
-                    })}
-                  </div>
+                  <h3 className="mb-2 text-sm font-semibold text-white">Shipment Information</h3>
+                  <p className="text-sm text-zinc-400">
+                    <span className="font-medium text-zinc-300">Shipped at:</span> {formatDate(selectedOrder.enviado_em)}
+                  </p>
+                  {selectedOrder.entregue_em && (
+                    <p className="text-sm text-zinc-400 mt-1">
+                      <span className="font-medium text-zinc-300">Delivered at:</span> {formatDate(selectedOrder.entregue_em)}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

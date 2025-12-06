@@ -54,14 +54,14 @@ export default function AdminDashboard() {
           color: "text-green-400",
         },
         {
-          title: "Suppliers",
+          title: "Total Suppliers",
           value: stats.totalSuppliers.toString(),
           icon: Truck,
           description: "Active suppliers",
           color: "text-purple-400",
         },
         {
-          title: "Products",
+          title: "Total Products",
           value: stats.totalProducts.toString(),
           icon: Package,
           description: "Available products",

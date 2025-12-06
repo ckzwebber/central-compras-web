@@ -35,6 +35,8 @@ export default function SupplierDashboardPage() {
 
       setStatistics(statsData);
       setRecentOrders(ordersData.data.slice(0, 4));
+      console.log(ordersData);
+      console.log(statsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard data");
     } finally {
@@ -179,7 +181,7 @@ export default function SupplierDashboardPage() {
                             <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${status.color}`}>{status.label}</span>
                           </div>
                           <div className="mt-1 flex items-center gap-4 text-sm text-zinc-400">
-                            <span>{order.loja.nome || "Store"}</span>
+                            <span>{order.loja_id.nome || "Store"}</span>
                             <span>•</span>
                             <span>{formatDate(order.criado_em)}</span>
                           </div>

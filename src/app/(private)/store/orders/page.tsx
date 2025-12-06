@@ -32,7 +32,6 @@ export default function StoreOrdersPage() {
         setError(null);
         const data = await pedidosService.getMeusPedidos();
         setPedidos(data);
-        console.log(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao carregar pedidos");
       } finally {

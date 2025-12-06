@@ -55,9 +55,9 @@ export interface UpdateSupplierProductData {
 
 export interface SupplierOrder {
   id: string;
-  loja: {
-    id: string;
+  loja_id: {
     nome: string;
+    id: string;
   };
   valor_total: number;
   status: "pendente" | "processando" | "enviado" | "entregue" | "cancelado";

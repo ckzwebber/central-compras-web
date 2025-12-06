@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Store, Package, Users, Truck, Home } from "lucide-react";
+import { LayoutDashboard, Store, Package, Users, Truck, Home, ShoppingCart } from "lucide-react";
 import { DashboardSidebar, NavigationItem } from "@/components/dashboard-sidebar";
 import { authService } from "@/lib/auth.service";
 import { useState, useEffect } from "react";
@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 const navigation: NavigationItem[] = [
   { name: "Home", href: "/", icon: Home },
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { name: "Stores", href: "/admin/stores", icon: Store },
   { name: "Suppliers", href: "/admin/suppliers", icon: Truck },
   { name: "Products", href: "/admin/products", icon: Package },

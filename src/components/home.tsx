@@ -30,6 +30,21 @@ export const Home = () => {
     loadProdutos();
   }, []);
 
+  useEffect(() => {
+    const handleSearchChange = (e: CustomEvent) => {
+      setFilters((prev) => ({ ...prev, search: e.detail }));
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get("search");
+    if (search) {
+      setFilters((prev) => ({ ...prev, search }));
+    }
+
+    window.addEventListener("searchChanged", handleSearchChange as EventListener);
+    return () => window.removeEventListener("searchChanged", handleSearchChange as EventListener);
+  }, []);
+
   const categories = useMemo(() => {
     const unique = new Set(produtos.map((produto) => produto.categoria));
     return Array.from(unique).sort();

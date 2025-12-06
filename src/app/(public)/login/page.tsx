@@ -3,7 +3,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SiWolframlanguage } from "react-icons/si";
-import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,7 +69,13 @@ export default function LoginPage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="mb-8 flex justify-center">
+          <div className="mb-8 flex justify-center relative">
+            <Link href="/" className="absolute left-0 top-1/2 -translate-y-1/2">
+              <Button variant="link" size="sm" className="text-zinc-400 hover:text-white">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back to Home
+              </Button>
+            </Link>
             <Link href="/" className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-black shadow-lg transition-transform hover:scale-105">
               <SiWolframlanguage size={36} className="text-white" />
             </Link>
