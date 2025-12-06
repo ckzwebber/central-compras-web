@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, MoreVertical, Trash2, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -145,39 +146,42 @@ export default function ProductsPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => {
               const stockStatus = getStockStatus(product.quantidade_estoque);
+              const imagemUrl = product.imagem_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop";
+
               return (
                 <Card key={product.id} className="group border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/60">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white">{product.nome}</h3>
-                        <p className="mt-1 text-sm text-zinc-400">{product.descricao}</p>
+                  <CardHeader className="p-0">
+                    <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-zinc-900">
+                      <Image src={imagemUrl} alt={product.nome} fill className="object-cover transition group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                      <div className="absolute right-2 top-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="default" size="icon" className="h-8 w-8 bg-zinc-950/90 text-zinc-400 backdrop-blur-sm hover:bg-zinc-900">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
+                            <DropdownMenuItem onClick={() => handleDeleteClick(product)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="default" size="icon" className="h-8 w-8 text-zinc-400">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="border-zinc-800 bg-zinc-950">
-                          <DropdownMenuItem onClick={() => handleDeleteClick(product)} className="text-red-400 focus:bg-zinc-900 focus:text-red-400">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-400">Category:</span>
-                      <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300">{product.categoria || "N/A"}</span>
+                  <CardContent className="space-y-3 p-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{product.nome}</h3>
+                      <p className="mt-1 line-clamp-2 text-sm text-zinc-400">{product.descricao}</p>
                     </div>
 
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-400">Supplier ID:</span>
-                      <span className="text-zinc-200 truncate w-30">{product.fornecedor_id}</span>
-                    </div>
+                    {product.categoria && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-zinc-400">Category:</span>
+                        <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300">{product.categoria}</span>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-zinc-400">Unit Price:</span>

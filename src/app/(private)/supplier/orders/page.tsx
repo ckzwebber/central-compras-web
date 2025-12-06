@@ -40,6 +40,7 @@ export default function SupplierOrdersPage() {
       setError(null);
       const data = await supplierService.getMyOrders();
       setOrders(data.data);
+      console.log(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load orders");
     } finally {
@@ -73,7 +74,7 @@ export default function SupplierOrdersPage() {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filteredOrders = filteredOrders.filter((order) => order.id.toLowerCase().includes(query) || order.loja_id.nome.toLowerCase().includes(query));
+      filteredOrders = filteredOrders.filter((order) => order.id.toLowerCase().includes(query) || order.loja.nome.toLowerCase().includes(query));
     }
 
     return filteredOrders;
@@ -177,7 +178,7 @@ export default function SupplierOrdersPage() {
                               </div>
                               <div className="space-y-1 text-sm text-zinc-400">
                                 <p>
-                                  <span className="font-medium text-zinc-300">Store:</span> {order.loja_id.nome}
+                                  <span className="font-medium text-zinc-300">Store:</span> {order.loja.nome}
                                 </p>
                                 <p>
                                   <span className="font-medium text-zinc-300">Date:</span> {formatDate(order.criado_em)}
@@ -254,7 +255,7 @@ export default function SupplierOrdersPage() {
                 <h3 className="mb-2 text-sm font-semibold text-white">Order Information</h3>
                 <div className="space-y-1 text-sm text-zinc-400">
                   <p>
-                    <span className="font-medium text-zinc-300">Store:</span> {selectedOrder.loja_id.nome}
+                    <span className="font-medium text-zinc-300">Store:</span> {selectedOrder.loja.nome}
                   </p>
                   <p>
                     <span className="font-medium text-zinc-300">Date:</span> {formatDate(selectedOrder.criado_em)}

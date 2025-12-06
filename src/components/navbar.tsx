@@ -167,7 +167,7 @@ export const Navbar = () => {
                     <p className="text-sm font-medium text-white truncate">{produto.nome}</p>
                     <p className="text-xs text-zinc-400 truncate">{produto.descricao}</p>
                   </div>
-                  <p className="text-sm font-semibold text-green-400 whitespace-nowrap">R$ {produto.valor_unitario.toFixed(2)}</p>
+                  <p className="text-sm font-semibold text-green-400 whitespace-nowrap">R$ {produto.valor_unitario}</p>
                 </button>
               ))}
             </div>
