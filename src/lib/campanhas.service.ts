@@ -43,7 +43,7 @@ class CampanhasService {
 
   async getMelhorCampanhaPorFornecedor(fornecedorId: string): Promise<Campanha | null> {
     const campanhas = await this.getAtivasPorFornecedor(fornecedorId);
-    
+
     if (campanhas.length === 0) {
       return null;
     }

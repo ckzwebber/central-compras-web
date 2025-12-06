@@ -92,7 +92,9 @@ export function OrderSummary({
               <div className="flex items-center justify-between text-white">
                 <div className="flex items-center gap-2">
                   <Tag className="h-3 w-3" />
-                  <span className="font-semibold">{campanhaAplicada.nome} ({campanhaAplicada.desconto_porcentagem}%)</span>
+                  <span className="font-semibold">
+                    {campanhaAplicada.nome} ({campanhaAplicada.desconto_porcentagem}%)
+                  </span>
                 </div>
                 <span className="font-semibold">-{formatCurrency(descontoAplicado)}</span>
               </div>
