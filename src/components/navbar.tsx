@@ -25,11 +25,31 @@ export const Navbar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const userFunction = user?.funcao || "store";
+  const inferredRoleFromPath = pathname.startsWith("/admin") ? "admin" : pathname.startsWith("/supplier") ? "fornecedor" : pathname.startsWith("/store") ? "loja" : null;
+  const effectiveUserRole = user?.funcao || inferredRoleFromPath;
+  const isAuthenticatedContext = Boolean(user || inferredRoleFromPath);
 
   useEffect(() => {
-    setMounted(true);
-    setUser(authService.getUser());
+    let isActive = true;
+
+    const initializeUser = async () => {
+      setMounted(true);
+
+      const cachedUser = authService.getUser();
+      if (cachedUser && isActive) {
+        setUser(cachedUser);
+      }
+
+      const isPrivateArea = pathname.startsWith("/admin") || pathname.startsWith("/supplier") || pathname.startsWith("/store");
+      if (cachedUser || isPrivateArea) {
+        const sessionUser = await authService.syncUserFromSession();
+        if (isActive) {
+          setUser(sessionUser || cachedUser);
+        }
+      }
+    };
+
+    initializeUser();
 
     if (typeof window !== "undefined") {
       (window as any).openCart = () => cartRef.current?.open();
@@ -40,7 +60,11 @@ export const Navbar = () => {
         setSearchQuery(search);
       }
     }
-  }, []);
+
+    return () => {
+      isActive = false;
+    };
+  }, [pathname]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -175,7 +199,7 @@ export const Navbar = () => {
         </div>
       </div>
       <div className="flex-1 flex justify-end items-center gap-2">
-        {!user ? (
+        {!isAuthenticatedContext ? (
           <Link href="/login">
             <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
               <LogIn className="h-3 w-3 mr-1" />
@@ -184,7 +208,7 @@ export const Navbar = () => {
           </Link>
         ) : (
           <>
-            {userFunction === "admin" && (
+            {effectiveUserRole === "admin" && (
               <Link href="/admin">
                 <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
                   <LayoutDashboard className="h-3 w-3 mr-1" />
@@ -192,7 +216,7 @@ export const Navbar = () => {
                 </Button>
               </Link>
             )}
-            {userFunction === "fornecedor" && (
+            {effectiveUserRole === "fornecedor" && (
               <Link href="/supplier">
                 <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
                   <LayoutDashboard className="h-3 w-3 mr-1" />
@@ -200,7 +224,7 @@ export const Navbar = () => {
                 </Button>
               </Link>
             )}
-            {(userFunction === "loja" || userFunction === "usuario") && (
+            {(effectiveUserRole === "loja" || effectiveUserRole === "usuario") && (
               <Link href="/store">
                 <Button variant="link" size="sm" className="text-xs text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-600">
                   <LayoutDashboard className="h-3 w-3 mr-1" />
@@ -217,7 +241,7 @@ export const Navbar = () => {
           </>
         )}
 
-        {(!user || userFunction === "loja" || userFunction === "usuario") && <CartSheet ref={cartRef} />}
+        {(!isAuthenticatedContext || effectiveUserRole === "loja" || effectiveUserRole === "usuario") && <CartSheet ref={cartRef} />}
       </div>
     </nav>
   );

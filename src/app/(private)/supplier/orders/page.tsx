@@ -40,7 +40,6 @@ export default function SupplierOrdersPage() {
       setError(null);
       const data = await supplierService.getMyOrders();
       setOrders(data.data);
-      console.log(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load orders");
     } finally {

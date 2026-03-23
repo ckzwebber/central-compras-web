@@ -8,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { FormSection } from "@/components/admin/form-section";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { jwtDecode } from "jwt-decode";
-import { User as userType } from "@/types/auth";
 import { userService } from "@/lib/user.service";
 import { authService } from "@/lib/auth.service";
 import { UpdateUserData, UpdatePasswordData, UpdateStoreData } from "@/types/user";
@@ -44,25 +42,27 @@ export default function StoreProfilePage() {
     cnpj: "",
   });
 
+  const redirectToLogin = () => {
+    window.location.href = "/login";
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const token = localStorage.getItem("auth_token");
-        if (!token) {
+        const currentUser = authService.getUser();
+        if (!currentUser?.sub) {
           setError("User not authenticated");
           setIsLoading(false);
           return;
         }
 
-        const payload: userType = jwtDecode(token);
-
-        const userResponse = await userService.getUser(payload.sub);
+        const userResponse = await userService.getUser(currentUser.sub);
         if (userResponse.success && userResponse.data) {
           const freshUserData = userResponse.data;
-          const mergedUserData = { ...payload, ...freshUserData };
+          const mergedUserData = { ...currentUser, ...freshUserData, sub: freshUserData.id || currentUser.sub };
           setUserData(mergedUserData);
           setUserForm({
             nome: freshUserData.nome,
@@ -70,11 +70,11 @@ export default function StoreProfilePage() {
             email: freshUserData.email,
           });
         } else {
-          setUserData(payload);
+          setUserData(currentUser);
           setUserForm({
-            nome: payload.nome,
-            sobrenome: payload.sobrenome,
-            email: payload.email,
+            nome: currentUser.nome,
+            sobrenome: currentUser.sobrenome,
+            email: currentUser.email,
           });
         }
 
@@ -122,24 +122,19 @@ export default function StoreProfilePage() {
       const updatedUserResponse = await userService.getUser(userData.sub);
       if (updatedUserResponse.success && updatedUserResponse.data) {
         const updatedUser = updatedUserResponse.data;
+        const normalizedUser = {
+          ...userData,
+          ...updatedUser,
+          sub: updatedUser.id || userData.sub,
+        };
 
-        if (updatedUserResponse.data.token) {
-          localStorage.setItem("auth_token", updatedUserResponse.data.token);
-          const newPayload = jwtDecode(updatedUserResponse.data.token) as any;
-          setUserData(newPayload);
-          setUserForm({
-            nome: newPayload.nome,
-            sobrenome: newPayload.sobrenome,
-            email: newPayload.email,
-          });
-        } else {
-          setUserData({ ...userData, ...updatedUser });
-          setUserForm({
-            nome: updatedUser.nome,
-            sobrenome: updatedUser.sobrenome,
-            email: updatedUser.email,
-          });
-        }
+        authService.setUser(normalizedUser);
+        setUserData(normalizedUser);
+        setUserForm({
+          nome: updatedUser.nome,
+          sobrenome: updatedUser.sobrenome,
+          email: updatedUser.email,
+        });
       }
 
       setSuccessMessage("User data updated successfully!");
@@ -147,7 +142,7 @@ export default function StoreProfilePage() {
       if (updateData.email) {
         setTimeout(() => {
           authService.logout();
-          window.location.href = "/login";
+          redirectToLogin();
         }, 2000);
       }
     } catch (err: any) {
@@ -234,7 +229,7 @@ export default function StoreProfilePage() {
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
       authService.logout();
-      window.location.href = "/login";
+      redirectToLogin();
     } catch (err: any) {
       setError(err.response?.data?.message || "Error changing password.");
       setIsChangingPassword(false);

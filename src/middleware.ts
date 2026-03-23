@@ -58,7 +58,9 @@ export function middleware(request: NextRequest) {
     try {
       const tokenDecoded: TokenDecoded = jwtDecode(tokenString);
 
-      if (tokenDecoded.iat * 1000 < Date.now() - 24 * 60 * 60 * 1000) {
+      const tokenExpirationDate = tokenDecoded.exp ? tokenDecoded.exp * 1000 : tokenDecoded.iat * 1000 + 24 * 60 * 60 * 1000;
+
+      if (tokenExpirationDate <= Date.now()) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
 

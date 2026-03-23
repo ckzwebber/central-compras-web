@@ -2,11 +2,16 @@
 
 import type { LoginRequest, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse, User } from "@/types/auth";
 import { api } from "@/config/axios.config";
-import { jwtDecode } from "jwt-decode";
 
 class AuthService {
-  private tokenKey = "auth_token";
   private userKey = "user_data";
+
+  private normalizeUser(payloadUser: User & { id?: string }): User {
+    return {
+      ...payloadUser,
+      sub: payloadUser.sub || payloadUser.id || "",
+    };
+  }
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
@@ -17,13 +22,15 @@ class AuthService {
       }
 
       const data: LoginResponse = response.data;
-      const token = data.data.token;
 
-      this.setToken(token);
-      this.setCookie(token);
+      if (!data.data?.user) {
+        throw new Error("Invalid login response");
+      }
 
-      const user = jwtDecode<User>(token);
-      this.setUser(user);
+      const payloadUser = data.data.user as unknown as User & { id?: string };
+      const normalizedUser = this.normalizeUser(payloadUser);
+
+      this.setUser(normalizedUser);
 
       return data;
     } catch (error) {
@@ -61,35 +68,47 @@ class AuthService {
     }
   }
 
-  logout(): void {
-    this.removeToken();
+  async logout(): Promise<void> {
+    try {
+      await api.post("/usuarios/logout");
+    } catch (_error) {
+      // Ignore API logout errors and clear local session state anyway.
+    }
+
     this.removeUser();
-    this.removeCookie();
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
-  }
-
-  getToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(this.tokenKey);
-  }
-
-  setToken(token: string): void {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(this.tokenKey, token);
-  }
-
-  removeToken(): void {
-    if (typeof window === "undefined") return;
-    localStorage.removeItem(this.tokenKey);
+    return !!this.getUser();
   }
 
   getUser(): User | null {
     if (typeof window === "undefined") return null;
     const userData = localStorage.getItem(this.userKey);
     return userData ? JSON.parse(userData) : null;
+  }
+
+  async syncUserFromSession(): Promise<User | null> {
+    try {
+      const response = await api.get("/usuarios/me", {
+        headers: {
+          "x-skip-auth-redirect": "1",
+        },
+      });
+      const sessionUser = response?.data?.data;
+
+      if (!sessionUser) {
+        this.removeUser();
+        return null;
+      }
+
+      const normalizedUser = this.normalizeUser(sessionUser);
+      this.setUser(normalizedUser);
+      return normalizedUser;
+    } catch (_error) {
+      this.removeUser();
+      return null;
+    }
   }
 
   setUser(user: User): void {
@@ -100,43 +119,6 @@ class AuthService {
   removeUser(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(this.userKey);
-  }
-
-  getAuthHeaders(): Record<string, string> {
-    const token = this.getToken();
-    return {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  }
-
-  setCookie(token: string): void {
-    if (typeof document === "undefined") return;
-    const expirationDate = new Date();
-    expirationDate.setTime(expirationDate.getTime() + 24 * 60 * 60 * 1000);
-    document.cookie = `${this.tokenKey}=${token}; expires=${expirationDate.toUTCString()}; path=/; SameSite=Lax`;
-  }
-
-  removeCookie(): void {
-    if (typeof document === "undefined") return;
-    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
-  }
-
-  getCookie(): string | null {
-    if (typeof document === "undefined") return null;
-    const name = this.tokenKey + "=";
-    const decodedCookie = decodeURIComponent(document.cookie);
-    const cookieArray = decodedCookie.split(";");
-    for (let i = 0; i < cookieArray.length; i++) {
-      let cookie = cookieArray[i];
-      while (cookie.charAt(0) === " ") {
-        cookie = cookie.substring(1);
-      }
-      if (cookie.indexOf(name) === 0) {
-        return cookie.substring(name.length, cookie.length);
-      }
-    }
-    return null;
   }
 }
 

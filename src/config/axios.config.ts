@@ -8,34 +8,21 @@ export const api = axios.create({
   },
 });
 
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("auth_token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const requestUrl = String(error.config?.url || "");
+      const skipAuthRedirect = String(error.config?.headers?.["x-skip-auth-redirect"] || "") === "1";
+      const isSessionProbe = requestUrl.includes("/usuarios/me");
+
       if (typeof window !== "undefined") {
-        localStorage.removeItem("auth_token");
         localStorage.removeItem("user_data");
-        document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
-        if (!window.location.pathname.startsWith("/login")) {
+        if (!skipAuthRedirect && !isSessionProbe && !window.location.pathname.startsWith("/login")) {
           window.location.href = "/login";
         }
       }
     }
     return Promise.reject(error);
-  }
+  },
 );

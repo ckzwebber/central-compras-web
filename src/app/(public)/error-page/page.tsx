@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { SiWolframlanguage } from "react-icons/si";
@@ -58,7 +59,7 @@ const errorConfigs: Record<string, ErrorConfig> = {
   },
 };
 
-export default function ErrorPage() {
+function ErrorPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const statusCode = searchParams.get("code") || "default";
@@ -159,5 +160,13 @@ export default function ErrorPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ErrorPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-zinc-950" />}>
+      <ErrorPageContent />
+    </Suspense>
   );
 }

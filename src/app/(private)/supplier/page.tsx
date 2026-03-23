@@ -35,8 +35,6 @@ export default function SupplierDashboardPage() {
 
       setStatistics(statsData);
       setRecentOrders(ordersData.data.slice(0, 4));
-      console.log(ordersData);
-      console.log(statsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard data");
     } finally {

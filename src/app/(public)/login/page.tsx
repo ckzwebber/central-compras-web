@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,7 +42,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await authService.login({ email, senha: password });
+      await authService.login({ email, senha: password });
 
       const user = authService.getUser();
 
@@ -58,7 +59,7 @@ export default function LoginPage() {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      window.location.href = targetRoute;
+      router.replace(targetRoute);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid email or password. Please try again.");
       setIsLoading(false);

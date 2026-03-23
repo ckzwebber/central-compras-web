@@ -19,11 +19,9 @@ export interface LoginRequest {
   senha: string;
 }
 
-export interface LoginResponse
-  extends DefaultResponse<{
-    token: string;
-    user: User;
-  }> {}
+export interface LoginResponse extends DefaultResponse<{
+  user: User;
+}> {}
 
 export interface ForgotPasswordRequest {
   email: string;
@@ -47,7 +45,6 @@ export interface ResetPasswordResponse {
 
 export interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
