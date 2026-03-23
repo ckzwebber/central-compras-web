@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.API_BASE_URL;
 
-export async function handler(req: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path.join("/");
+export async function handler(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const { path: pathSegments } = await params;
+  const path = pathSegments.join("/");
   const url = `${API_BASE_URL}/${path}`;
 
   const headers = new Headers();
