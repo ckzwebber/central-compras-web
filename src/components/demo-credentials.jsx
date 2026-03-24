@@ -71,6 +71,10 @@ export function DemoCredentials() {
             </DialogDescription>
           </DialogHeader>
 
+          <div className="rounded-lg border border-amber-700/40 bg-amber-950/30 p-3 text-sm text-amber-200">
+            This demo is hosted on a free backend with cold start. Initial requests may be slower and can occasionally fail due to timeout. If that happens, wait a few seconds and try again.
+          </div>
+
           <div className="space-y-3">
             {accounts.map((account) => (
               <div key={account.label} className="rounded-lg border border-zinc-800 bg-zinc-900/70 p-4">
